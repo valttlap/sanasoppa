@@ -6,6 +6,6 @@ namespace Rappakalja.API.Entities
         public int GameId { get; set; }
         public Game Game { get; set; } = default!;
         public String Word { get; set; } = default!;
-        public ICollection<Explanation> Explanations = default!;
+        public List<Explanation> Explanations = new();
     }
 }

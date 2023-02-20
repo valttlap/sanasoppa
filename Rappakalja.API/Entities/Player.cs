@@ -8,5 +8,6 @@ namespace Rappakalja.API.Entities
         public bool IsDasher { get; set; }
         public int GameId { get; set; }
         public Game Game { get; set; } = default!;
+        public List<Explanation> Explanations { get; set; } = new();
     }
 }

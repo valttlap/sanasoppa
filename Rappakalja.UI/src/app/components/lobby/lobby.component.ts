@@ -11,7 +11,7 @@ import { IPlayer } from 'src/app/models/IPlayer';
 export class LobbyComponent implements OnInit {
   lobbyId?: string;
   gameHub!: HubConnection;
-  players: IPlayer[] = [];
+  players: string[] = [];
 
   constructor(
     private router: Router,
@@ -30,13 +30,12 @@ export class LobbyComponent implements OnInit {
     } catch (e) {
       this.router.navigate(['/error', e]);
     }
-    this.gameHub.on('PlayerJoined', (player: string) => this.addPlayer(player));
-  }
-
-  addPlayer(playerName: string) {
-    const newPlayer: IPlayer = {
-      name: playerName,
-    };
-    this.players.push(newPlayer);
+    this.gameHub
+      .invoke('GetPlayers', this.lobbyId)
+      .then((players: string[]) => (this.players = players));
+    this.gameHub.on(
+      'PlayerJoined',
+      (players: string[]) => (this.players = players)
+    );
   }
 }

@@ -37,16 +37,7 @@ namespace Rappakalja.API.Data.Repositories
 
         public async Task<IEnumerable<Player?>> GetPlayersAsync(int gameId)
         {
-            var game = await _context.Games
-                .Include(g => g.Players)
-                .SingleOrDefaultAsync(x => x.Id == gameId);
-            
-            if (game == null)
-            {
-                throw new Exception("Game not found");
-            }
-
-            return game.Players.ToList();
+            return await _context.Players.Where(p => p.GameId == gameId).ToListAsync();
         }
 
         public async Task<int> GetNextConnectionId()

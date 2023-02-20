@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -7,36 +6,18 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Rappakalja.API.Migrations
 {
     /// <inheritdoc />
-    public partial class MyFirstMigration : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Explanation",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Text = table.Column<string>(type: "text", nullable: false),
-                    IsRight = table.Column<bool>(type: "boolean", nullable: false),
-                    RoundId = table.Column<int>(type: "integer", nullable: false),
-                    PlayerId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Explanation", x => x.Id);
-                });
-
             migrationBuilder.CreateTable(
                 name: "Games",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ConnectionId = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-                    CurrentRoundId = table.Column<int>(type: "integer", nullable: true)
+                    ConnectionId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -85,6 +66,34 @@ namespace Rappakalja.API.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Explanation",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Text = table.Column<string>(type: "text", nullable: false),
+                    IsRight = table.Column<bool>(type: "boolean", nullable: false),
+                    RoundId = table.Column<int>(type: "integer", nullable: false),
+                    PlayerId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Explanation", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Explanation_Players_PlayerId",
+                        column: x => x.PlayerId,
+                        principalTable: "Players",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Explanation_Rounds_RoundId",
+                        column: x => x.RoundId,
+                        principalTable: "Rounds",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Explanation_PlayerId",
                 table: "Explanation",
@@ -102,9 +111,10 @@ namespace Rappakalja.API.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Games_CurrentRoundId",
-                table: "Games",
-                column: "CurrentRoundId");
+                name: "IX_Players_ConnectionId",
+                table: "Players",
+                column: "ConnectionId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Players_GameId",
@@ -114,39 +124,13 @@ namespace Rappakalja.API.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Rounds_GameId",
                 table: "Rounds",
-                column: "GameId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Explanation_Players_PlayerId",
-                table: "Explanation",
-                column: "PlayerId",
-                principalTable: "Players",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Explanation_Rounds_RoundId",
-                table: "Explanation",
-                column: "RoundId",
-                principalTable: "Rounds",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Games_Rounds_CurrentRoundId",
-                table: "Games",
-                column: "CurrentRoundId",
-                principalTable: "Rounds",
-                principalColumn: "Id");
+                column: "GameId",
+                unique: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Games_Rounds_CurrentRoundId",
-                table: "Games");
-
             migrationBuilder.DropTable(
                 name: "Explanation");
 

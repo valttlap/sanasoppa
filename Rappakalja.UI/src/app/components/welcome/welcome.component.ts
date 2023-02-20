@@ -22,7 +22,6 @@ export class WelcomeComponent implements OnInit {
   }
 
   createGame() {
-    console.log(this.username);
     if (!this.username) return;
     this.gameHub
       .invoke('CreateGame', this.username)

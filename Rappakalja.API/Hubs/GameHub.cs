@@ -44,6 +44,18 @@ namespace Rappakalja.API.Hubs
             }
         }
 
+        public async Task<IEnumerable<String?>> GetPlayers(string connectionId)
+        {
+            var game = await _uow.GameRepository.GetByConnectionIdAsync(int.Parse(connectionId));
+
+            if (game == null)
+            {
+                throw new ArgumentException("Invalid game ID");
+            }
+            return (await _uow.GameRepository.GetPlayersAsync(game.Id)).Select(p => p?.Name);
+
+        }
+
         public async Task JoinGame(string connectionId, string username)
         {
             try
@@ -70,12 +82,14 @@ namespace Rappakalja.API.Hubs
                     await Groups.AddToGroupAsync(player.ConnectionId, game.ConnectionId.ToString());
 
                     // notify all players in the game that a new player has joined
-                    await Clients.Group(game.ConnectionId.ToString()).SendAsync("PlayerJoined", player.Name);
+                    var playerNames = (await _uow.GameRepository.GetPlayersAsync(game.Id)).Select(p => p?.Name);
+                    await Clients.Group(game.ConnectionId.ToString()).SendAsync("PlayerJoined", playerNames);
                 }
                 else
                 {
                     throw new Exception("An error occured while joining to game");
                 }
+               
             }
             catch (Exception ex)
             {

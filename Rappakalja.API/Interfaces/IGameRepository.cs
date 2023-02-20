@@ -11,6 +11,5 @@ namespace Rappakalja.API.Interfaces
         Task<int> GetNextConnectionId();
         void AddGame(Game game);
         void Update(Game game);
-
     }
 }
