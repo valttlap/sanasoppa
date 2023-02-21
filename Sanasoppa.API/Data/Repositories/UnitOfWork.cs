@@ -11,6 +11,8 @@ namespace Sanasoppa.API.Data.Repositories
         }
         public IGameRepository GameRepository => new GameRepository(_context);
 
+        public IPlayerRepository PlayerRepository => new PlayerRepository(_context);
+
         public async Task<bool> Complete()
         {
             return await _context.SaveChangesAsync() > 0;

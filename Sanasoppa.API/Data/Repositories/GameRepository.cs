@@ -50,5 +50,31 @@ namespace Sanasoppa.API.Data.Repositories
         {
             _context.Games.Add(game);
         }
+
+        public async Task<Player> GetDasherAsync(int gameId)
+        {
+            var dasher = await _context.Players
+                .SingleOrDefaultAsync(p => p.GameId == gameId && p.IsDasher);
+            
+            if (dasher == null)
+            {
+                throw new Exception("No dasher found for game");
+            }
+
+            return dasher;
+        }
+
+        public async Task<Player> GetDasherAsync(Game game)
+        {
+            var dasher = await _context.Players
+                .SingleOrDefaultAsync(p => p.GameId == game.Id && p.IsDasher);
+
+            if (dasher == null)
+            {
+                throw new Exception("No dasher found for game");
+            }
+
+            return dasher;
+        }
     }
 }

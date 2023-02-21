@@ -11,6 +11,8 @@ namespace Sanasoppa.API.Data.Configurations
             builder.HasKey(e => e.Id);
             builder.Property(e => e.Id).ValueGeneratedOnAdd();
 
+            builder.Property(e => e.GameStarted).HasDefaultValue(false).IsRequired();
+
             builder.HasMany(e => e.Players)
                 .WithOne(e => e.Game)
                 .HasForeignKey(e => e.GameId);
