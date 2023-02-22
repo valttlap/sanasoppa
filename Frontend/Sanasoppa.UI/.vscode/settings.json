@@ -1,6 +1,6 @@
 {
     "sonarlint.connectedMode.project": {
         "connectionId": "valttlap",
-        "projectKey": "valttlap_sanasoppa"
+        "projectKey": "valttlap_sanasoppa_front_end"
     }
 }
