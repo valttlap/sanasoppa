@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "Sanasoppa.UI": {
+    "Sanasoppa": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/Sanasoppa.ui",
+            "outputPath": "dist/sanasoppa",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": ["zone.js"],
@@ -58,10 +58,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "Sanasoppa.UI:build:production"
+              "browserTarget": "Sanasoppa:build:production"
             },
             "development": {
-              "browserTarget": "Sanasoppa.UI:build:development"
+              "browserTarget": "Sanasoppa:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -69,7 +69,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "Sanasoppa.UI:build"
+            "browserTarget": "Sanasoppa:build"
           }
         },
         "test": {
