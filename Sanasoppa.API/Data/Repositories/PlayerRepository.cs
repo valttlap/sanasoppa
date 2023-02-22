@@ -14,7 +14,7 @@ namespace Sanasoppa.API.Data.Repositories
         }
         public async Task<Player?> GetPlayerAsync(int id)
         {
-            return await _context.Players.FindAsync(id);
+            return await _context.Players.FromSqlRaw("SELECT * FROM Players WHERE id = {0}", id).FirstOrDefaultAsync(); ;
         }
 
         public async Task<Player?> GetPlayerByConnIdAsync(string connectionId)

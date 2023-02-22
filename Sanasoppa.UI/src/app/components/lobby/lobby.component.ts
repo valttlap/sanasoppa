@@ -2,7 +2,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { GameHubService } from 'src/app/services/gamehub.service';
 import { HubConnection } from '@microsoft/signalr';
-import { IPlayer } from 'src/app/models/IPlayer';
 
 @Component({
   selector: 'app-lobby',
