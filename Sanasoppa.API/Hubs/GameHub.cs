@@ -153,7 +153,7 @@ namespace Sanasoppa.API.Hubs
 
             if (await _uow.Complete())
             {
-                await Clients.Group(game.ConnectionId.ToString()).SendAsync("RoundStarted", word);
+                await Clients.Group(game.ConnectionId.ToString()).SendAsync("RoundStarted", $"<b>{word}</b>");
             }
 
         }
