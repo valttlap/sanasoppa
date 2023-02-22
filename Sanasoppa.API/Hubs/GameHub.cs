@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Sanasoppa.API.Data.Repositories;
 using Sanasoppa.API.Entities;
+using Sanasoppa.API.Extensions;
 using Sanasoppa.API.Interfaces;
 
 namespace Sanasoppa.API.Hubs
@@ -16,6 +17,7 @@ namespace Sanasoppa.API.Hubs
 
         public async Task<int> CreateGame(string username)
         {
+            username = username.Sanitize();
             // create new game and player
             var game = new Game
             {
@@ -46,6 +48,7 @@ namespace Sanasoppa.API.Hubs
 
         public async Task<IEnumerable<String?>> GetPlayers(string connectionId)
         {
+            connectionId = connectionId.Sanitize();
             var game = await _uow.GameRepository.GetByConnectionIdAsync(int.Parse(connectionId));
 
             if (game == null)
@@ -58,6 +61,8 @@ namespace Sanasoppa.API.Hubs
 
         public async Task JoinGame(string connectionId, string username)
         {
+            connectionId = connectionId.Sanitize();
+            username = username.Sanitize();
             try
             {
                 var game = await _uow.GameRepository.GetByConnectionIdAsync(int.Parse(connectionId));
@@ -122,6 +127,7 @@ namespace Sanasoppa.API.Hubs
 
         public async Task StartRound(string word)
         {
+            word = word.Sanitize();
             var playerTask = _uow.PlayerRepository.GetPlayerByConnIdAsync(Context.ConnectionId);
             var gameTask = _uow.PlayerRepository.GetPlayerGameAsync(Context.ConnectionId);
             await Task.WhenAll(playerTask, gameTask);
@@ -153,7 +159,7 @@ namespace Sanasoppa.API.Hubs
 
             if (await _uow.Complete())
             {
-                await Clients.Group(game.ConnectionId.ToString()).SendAsync("RoundStarted", $"<b>{word}</b>");
+                await Clients.Group(game.ConnectionId.ToString()).SendAsync("RoundStarted", word);
             }
 
         }
