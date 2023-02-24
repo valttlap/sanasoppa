@@ -17,18 +17,18 @@ namespace Sanasoppa.API.Data.Repositories
             _context = context;
             _mapper = mapper;
         }
-        public async Task<Player?> GetPlayerAsync(int id)
+        public async Task<Player> GetPlayerAsync(int id)
         {
             return await _context.Players.FindAsync(id);
         }
 
-        public async Task<Player?> GetPlayerByConnIdAsync(string connectionId)
+        public async Task<Player> GetPlayerByConnIdAsync(string connectionId)
         {
             return await _context.Players
                 .SingleOrDefaultAsync(x => x.ConnectionId == connectionId);
         }
 
-        public async Task<Game?> GetPlayerGameAsync(string connId)
+        public async Task<Game> GetPlayerGameAsync(string connId)
         {
             var game = await _context.Players
                 .Where(p => p.ConnectionId == connId)
@@ -37,7 +37,7 @@ namespace Sanasoppa.API.Data.Repositories
             return game;
         }
 
-        public async Task<Game?> GetPlayerGameAsync(Player player)
+        public async Task<Game> GetPlayerGameAsync(Player player)
         {
             if (player == null)
             {

@@ -7,7 +7,7 @@ namespace Sanasoppa.API.Extensions
         public static string Sanitize(this string str)
         {
             string pattern = @"[^a-zA-Z0-9,.\söÖäÄåÅ:;]";
-            string sanitized = Regex.Replace(str, pattern, "", RegexOptions.None, TimeSpan.FromMilliseconds(500));
+            string sanitized = Regex.Replace(str, pattern, "", RegexOptions.NonBacktracking);
             return sanitized;
         }
     }
