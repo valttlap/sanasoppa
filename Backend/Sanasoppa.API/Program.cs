@@ -15,6 +15,11 @@ else
 {
     var connUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
+    if (connUrl == null)
+    {
+        throw new Exception("Envrionment value for database not found");
+    }
+
     connUrl = connUrl.Replace("postgres://", string.Empty);
     var pgUserPass = connUrl.Split("@")[0];
     var pgHostPortDb = connUrl.Split("@")[1];
@@ -33,12 +38,14 @@ builder.Services.AddDbContext<DataContext>(opt =>
 });
 
 var app = builder.Build();
-
-app.UseCors(builder => builder
-    .AllowAnyHeader()
-    .AllowAnyMethod()
-    .AllowCredentials()
-    .WithOrigins("http://localhost:4200"));
+if (builder.Environment.IsDevelopment())
+{
+    app.UseCors(builder => builder
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials()
+        .WithOrigins("http://localhost:4200"));
+}
 
 app.MapHub<GameHub>("hubs/gamehub");
 using var scope = app.Services.CreateScope();

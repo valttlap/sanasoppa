@@ -11,6 +11,7 @@ namespace Sanasoppa.API.Extensions
         public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration config)
         {
             services.AddCors();
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddSignalR();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 

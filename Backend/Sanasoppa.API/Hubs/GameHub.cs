@@ -53,7 +53,7 @@ namespace Sanasoppa.API.Hubs
 
             if (game == null)
             {
-                throw new ArgumentException("Invalid game ID");
+                throw new ArgumentNullException("Invalid game ID");
             }
             return (await _uow.GameRepository.GetPlayersAsync(game.Id)).Select(p => p?.Name);
 
@@ -69,7 +69,7 @@ namespace Sanasoppa.API.Hubs
 
                 if (game == null)
                 {
-                    throw new ArgumentException("Invalid game ID");
+                    throw new ArgumentNullException("Invalid game ID");
                 }
 
                 var player = new Player
@@ -106,47 +106,27 @@ namespace Sanasoppa.API.Hubs
 
         public async Task StartGame()
         {
-            var player = await _uow.PlayerRepository.GetPlayerByConnIdAsync(Context.ConnectionId);
-            if (player == null)
-            {
-                throw new Exception("Player not found");
-            }
-            var game = await _uow.PlayerRepository.GetPlayerGameAsync(player);
-            if (game == null)
-            {
-                throw new Exception("Game not found");
-            }
+            var (game, player) = await GetGameAndPlayer(Context.ConnectionId);
             game.GameStarted = true;
             _uow.GameRepository.Update(game);
 
             if (await _uow.Complete())
             {
-                await Clients.Group(game.ConnectionId.ToString()).SendAsync("GameStarted");
+                var dasher = await _uow.GameRepository.GetDasherAsync(game);
+                await Clients.GroupExcept(game.ConnectionId.ToString(), dasher.ConnectionId).SendAsync("GameStarted");
+                await Clients.Client(dasher.ConnectionId).SendAsync("StartRound");
             }
         }
 
         public async Task StartRound(string word)
         {
             word = word.Sanitize();
-            var playerTask = _uow.PlayerRepository.GetPlayerByConnIdAsync(Context.ConnectionId);
-            var gameTask = _uow.PlayerRepository.GetPlayerGameAsync(Context.ConnectionId);
-            await Task.WhenAll(playerTask, gameTask);
-            var player = playerTask.Result;
-            var game = gameTask.Result;
-            if (player == null)
-            {
-                throw new Exception("Player not found");
-            }
-            
-            if (game == null)
-            {
-                throw new Exception("Game not found");
-            }
+            var (game, player) = await GetGameAndPlayer(Context.ConnectionId);
             
             var dasher = await _uow.GameRepository.GetDasherAsync(game);
             if (dasher.Id != player.Id)
             {
-                throw new Exception("Player is not the dasher");
+                throw new ArgumentException("Player is not the dasher");
             }
 
             var newRound = new Round
@@ -161,7 +141,47 @@ namespace Sanasoppa.API.Hubs
             {
                 await Clients.Group(game.ConnectionId.ToString()).SendAsync("RoundStarted", word);
             }
+        }
 
+        public async Task GiveExplanation(string explanation)
+        {
+            explanation = explanation.Sanitize();
+            var (game, player) = await GetGameAndPlayer(Context.ConnectionId);
+            var newExplanation = new Explanation
+            {
+                Text = explanation,
+                IsRight = player.IsDasher,
+                PlayerId = player.Id
+            };
+
+            _uow.RoundRepository.AddExplanation(game.CurrentRound!, newExplanation);
+
+            if (await _uow.Complete())
+            {
+                await Clients.Group(game.ConnectionId.ToString()).SendAsync("ExplanationGiven", player);
+            }
+        }
+
+        
+
+        private async Task<Tuple<Game, Player>> GetGameAndPlayer(string connectionId)
+        {
+            var playerTask = _uow.PlayerRepository.GetPlayerByConnIdAsync(connectionId);
+            var gameTask = _uow.PlayerRepository.GetPlayerGameAsync(connectionId);
+            await Task.WhenAll(playerTask, gameTask);
+            var player = playerTask.Result;
+            var game = gameTask.Result;
+            if (player == null)
+            {
+                throw new ArgumentNullException("Player not found");
+            }
+            
+            if (game == null)
+            {
+                throw new ArgumentNullException("Game not found");
+            }
+
+            return new Tuple<Game, Player>(game, player);
         }
 
 

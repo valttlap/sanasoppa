@@ -1,3 +1,4 @@
+using AutoMapper;
 using Sanasoppa.API.Interfaces;
 
 namespace Sanasoppa.API.Data.Repositories
@@ -5,13 +6,18 @@ namespace Sanasoppa.API.Data.Repositories
     public class UnitOfWork : IUnitOfWork
     {
         private readonly DataContext _context;
-        public UnitOfWork(DataContext context)
+        private readonly IMapper _mapper;
+
+        public UnitOfWork(DataContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
         public IGameRepository GameRepository => new GameRepository(_context);
 
-        public IPlayerRepository PlayerRepository => new PlayerRepository(_context);
+        public IPlayerRepository PlayerRepository => new PlayerRepository(_context, _mapper);
+
+        public IRoundRepository RoundRepository => new RoundRepository(_context);
 
         public async Task<bool> Complete()
         {
