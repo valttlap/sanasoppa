@@ -10,12 +10,10 @@ namespace Sanasoppa.API.Data.Repositories
     public class PlayerRepository : IPlayerRepository
     {
         private readonly DataContext _context;
-        private readonly IMapper _mapper;
 
-        public PlayerRepository(DataContext context, IMapper mapper)
+        public PlayerRepository(DataContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
         public async Task<Player> GetPlayerAsync(int id)
         {

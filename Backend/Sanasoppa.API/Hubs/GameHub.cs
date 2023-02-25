@@ -46,14 +46,14 @@ namespace Sanasoppa.API.Hubs
             }
         }
 
-        public async Task<IEnumerable<String?>> GetPlayers(string connectionId)
+        public async Task<IEnumerable<string>> GetPlayers(string connectionId)
         {
             connectionId = connectionId.Sanitize();
             var game = await _uow.GameRepository.GetByConnectionIdAsync(int.Parse(connectionId));
 
             if (game == null)
             {
-                throw new ArgumentNullException("Invalid game ID");
+                throw new ArgumentNullException(nameof(connectionId), "Invalid game ID");
             }
             return (await _uow.GameRepository.GetPlayersAsync(game.Id)).Select(p => p?.Name);
 
@@ -69,7 +69,7 @@ namespace Sanasoppa.API.Hubs
 
                 if (game == null)
                 {
-                    throw new ArgumentNullException("Invalid game ID");
+                    throw new ArgumentNullException(nameof(connectionId), "Invalid game ID");
                 }
 
                 var player = new Player
@@ -162,7 +162,7 @@ namespace Sanasoppa.API.Hubs
             }
         }
 
-        
+
 
         private async Task<Tuple<Game, Player>> GetGameAndPlayer(string connectionId)
         {
@@ -171,18 +171,20 @@ namespace Sanasoppa.API.Hubs
             await Task.WhenAll(playerTask, gameTask);
             var player = playerTask.Result;
             var game = gameTask.Result;
+
             if (player == null)
             {
-                throw new ArgumentNullException("Player not found");
+                throw new InvalidOperationException("Player not found for connection ID: " + connectionId);
             }
-            
+
             if (game == null)
             {
-                throw new ArgumentNullException("Game not found");
+                throw new InvalidOperationException("Game not found for connection ID: " + connectionId);
             }
 
             return new Tuple<Game, Player>(game, player);
         }
+
 
 
     }

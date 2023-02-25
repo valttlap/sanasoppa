@@ -18,7 +18,7 @@ else
 
     if (connUrl == null)
     {
-        throw new Exception("Envrionment value for database not found");
+        throw new ArgumentNullException(nameof(connUrl), "The environment variable 'DATABASE_URL' is null.");
     }
 
     connUrl = connUrl.Replace("postgres://", string.Empty);

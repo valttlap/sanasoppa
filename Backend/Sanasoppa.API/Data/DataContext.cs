@@ -18,13 +18,15 @@ namespace Sanasoppa.API.Data
         public DbSet<Round> Rounds { get; set; } = default!;
         public DbSet<Explanation> Explanation { get; set; } = default!;
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder builder)
         {
-            base.OnModelCreating(modelBuilder);
-            modelBuilder.ApplyConfiguration(new GameConfiguration());
-            modelBuilder.ApplyConfiguration(new RoundConfiguration());
-            modelBuilder.ApplyConfiguration(new ExplanationConfiguration());
-            modelBuilder.ApplyConfiguration(new PlayerConfiguration());
+            base.OnModelCreating(builder);
+            builder.ApplyConfiguration(new GameConfiguration());
+            builder.ApplyConfiguration(new RoundConfiguration());
+            builder.ApplyConfiguration(new ExplanationConfiguration());
+            builder.ApplyConfiguration(new PlayerConfiguration());
+            builder.ApplyConfiguration(new AppRoleConfiguration());
+            builder.ApplyConfiguration(new AppUserConfiguration());
         }
     }
 }

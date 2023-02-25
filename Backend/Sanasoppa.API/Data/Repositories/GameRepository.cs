@@ -13,13 +13,13 @@ namespace Sanasoppa.API.Data.Repositories
             _context = context;
         }
 
-        public async Task<Game?> GetByConnectionIdAsync(int connectionId)
+        public async Task<Game> GetByConnectionIdAsync(int connectionId)
         {
             return await _context.Games
                 .SingleOrDefaultAsync(x => x.ConnectionId == connectionId);
         }
 
-        public async Task<Game?> GetByIdAsync(int id)
+        public async Task<Game> GetByIdAsync(int id)
         {
             return await _context.Games.FindAsync(id);
         }
@@ -35,7 +35,7 @@ namespace Sanasoppa.API.Data.Repositories
             _context.Entry(game).State = EntityState.Modified;
         }
 
-        public async Task<IEnumerable<Player?>> GetPlayersAsync(int gameId)
+        public async Task<IEnumerable<Player>> GetPlayersAsync(int gameId)
         {
             return await _context.Players.Where(p => p.GameId == gameId).ToListAsync();
         }

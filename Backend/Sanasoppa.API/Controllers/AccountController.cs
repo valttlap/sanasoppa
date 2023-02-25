@@ -13,14 +13,12 @@ namespace Sanasoppa.API.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly ITokenService _tokenService;
-        private readonly IMapper _mapper;
         private const string DEFAULT_PASSWORD = "SanaSoppa2023";
 
-        public AccountController(UserManager<AppUser> userManager, ITokenService tokenService, IMapper mapper)
+        public AccountController(UserManager<AppUser> userManager, ITokenService tokenService)
         {
             _userManager = userManager;
             _tokenService = tokenService;
-            _mapper = mapper;
         }
 
         [Authorize(Policy = "RequireModeratorRole")]

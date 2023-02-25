@@ -18,7 +18,7 @@ namespace Sanasoppa.API.Data.Repositories
             var round = await _context.Rounds.FindAsync(roundId);
             if (round == null)
             {
-                throw new ArgumentNullException(nameof(round));
+                throw new ArgumentException("The round does not exist.", nameof(roundId));
             }
             round.Explanations.Add(explanation);
             Update(round);
