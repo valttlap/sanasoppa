@@ -15,7 +15,7 @@ namespace Sanasoppa.API.Data.Repositories
         }
         public IGameRepository GameRepository => new GameRepository(_context);
 
-        public IPlayerRepository PlayerRepository => new PlayerRepository(_context, _mapper);
+        public IPlayerRepository PlayerRepository => new PlayerRepository(_context);
 
         public IRoundRepository RoundRepository => new RoundRepository(_context);
 
