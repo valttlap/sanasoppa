@@ -106,7 +106,7 @@ namespace Sanasoppa.API.Hubs
 
         public async Task StartGame()
         {
-            var (game, player) = await GetGameAndPlayer(Context.ConnectionId);
+            var (game, _) = await GetGameAndPlayer(Context.ConnectionId);
             game.GameStarted = true;
             _uow.GameRepository.Update(game);
 

@@ -18,7 +18,7 @@ else
 
     if (connUrl == null)
     {
-        throw new ArgumentNullException(nameof(connUrl), "The environment variable 'DATABASE_URL' is null.");
+        throw new ArgumentNullException(nameof(connUrl), $"The value of '{nameof(connUrl)}' is null. Please set the environment variable 'DATABASE_URL' with a valid connection string.");
     }
 
     connUrl = connUrl.Replace("postgres://", string.Empty);
