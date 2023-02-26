@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
+using Sanasoppa.API.DTOs;
 using Sanasoppa.API.Entities;
 using Sanasoppa.API.Interfaces;
 
@@ -12,17 +15,18 @@ namespace Sanasoppa.API.Data.Repositories
         {
             _context = context;
         }
-        public async Task<Player?> GetPlayerAsync(int id)
+        public async Task<Player> GetPlayerAsync(int id)
         {
             return await _context.Players.FindAsync(id);
         }
 
-        public async Task<Player?> GetPlayerByConnIdAsync(string connectionId)
+        public async Task<Player> GetPlayerByConnIdAsync(string connectionId)
         {
-            return await _context.Players.SingleOrDefaultAsync(x => x.ConnectionId == connectionId);
+            return await _context.Players
+                .SingleOrDefaultAsync(x => x.ConnectionId == connectionId);
         }
 
-        public async Task<Game?> GetPlayerGameAsync(string connId)
+        public async Task<Game> GetPlayerGameAsync(string connId)
         {
             var game = await _context.Players
                 .Where(p => p.ConnectionId == connId)
@@ -31,15 +35,19 @@ namespace Sanasoppa.API.Data.Repositories
             return game;
         }
 
-        public async Task<Game?> GetPlayerGameAsync(Player player)
+        public async Task<Game> GetPlayerGameAsync(Player player)
         {
             if (player == null)
             {
                 throw new ArgumentNullException(nameof(player));
             }
 
-            return await _context.Games.FindAsync(player.GameId);
+            return await _context.Games.Include(g => g.CurrentRound).Where(g => g.Id == player.GameId).FirstOrDefaultAsync();
         }
 
+        public void Update(Player player)
+        {
+            _context.Entry(player).State = EntityState.Modified;
+        }
     }
 }

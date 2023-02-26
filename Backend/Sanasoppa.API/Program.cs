@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddApplicationServices(builder.Configuration);
+builder.Services.AddIdentityServices(builder.Configuration);
 
 var connString = "";
 if (builder.Environment.IsDevelopment())
@@ -14,6 +15,11 @@ if (builder.Environment.IsDevelopment())
 else
 {
     var connUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+    if (connUrl == null)
+    {
+        throw new ArgumentNullException(nameof(connUrl), $"The value of '{nameof(connUrl)}' is null. Please set the environment variable 'DATABASE_URL' with a valid connection string.");
+    }
 
     connUrl = connUrl.Replace("postgres://", string.Empty);
     var pgUserPass = connUrl.Split("@")[0];
@@ -33,13 +39,20 @@ builder.Services.AddDbContext<DataContext>(opt =>
 });
 
 var app = builder.Build();
+if (builder.Environment.IsDevelopment())
+{
+    app.UseCors(builder => builder
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials()
+        .WithOrigins("http://localhost:4200"));
+}
 
-app.UseCors(builder => builder
-    .AllowAnyHeader()
-    .AllowAnyMethod()
-    .AllowCredentials()
-    .WithOrigins("http://localhost:4200"));
+app.UseAuthentication();
+app.UseAuthorization();
 
+
+app.MapControllers();
 app.MapHub<GameHub>("hubs/gamehub");
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
