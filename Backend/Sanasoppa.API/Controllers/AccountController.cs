@@ -27,9 +27,10 @@ namespace Sanasoppa.API.Controllers
         {
             if (await UserExists(username)) return BadRequest("Username is taken");
 
-            var user = new AppUser(true)
+            var user = new AppUser
             {
-                UserName = username.ToLower()
+                UserName = username.ToLower(),
+                HasDefaultPassword = true,
             };
 
             var result = await _userManager.CreateAsync(user, DEFAULT_PASSWORD);

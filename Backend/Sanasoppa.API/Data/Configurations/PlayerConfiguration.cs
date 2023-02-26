@@ -11,7 +11,7 @@ namespace Sanasoppa.API.Data.Configurations
             builder.HasKey(e => e.Id);
             builder.Property(e => e.Id).ValueGeneratedOnAdd();
 
-            builder.Property(e => e.Name).IsRequired();
+            builder.Property(e => e.Username).IsRequired();
 
             builder.HasMany(e => e.Explanations)
                 .WithOne(e => e.Player)

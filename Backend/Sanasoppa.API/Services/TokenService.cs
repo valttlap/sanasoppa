@@ -14,9 +14,9 @@ namespace Sanasoppa.API.Services
         private readonly SymmetricSecurityKey _key;
 
         public TokenService(IConfiguration config, UserManager<AppUser> userManager)
-        {
+        {   
             _userManager = userManager;
-            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"]));
+            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"] ?? throw new Exception("Tokenkey not found")));
         }
 
         public async Task<string> CreateToken(AppUser user)
@@ -24,7 +24,7 @@ namespace Sanasoppa.API.Services
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.NameId, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName!),
             };
 
             var roles = await _userManager.GetRolesAsync(user);

@@ -24,7 +24,11 @@ namespace Sanasoppa.API.Hubs
 
             if (player == null)
             {
-                player = new Player(Context.ConnectionId, username);
+                player = new Player
+                {
+                    ConnectionId = Context.ConnectionId,
+                    Username = username,
+                };
                 _uow.PlayerRepository.AddPlayer(player);
             }
             else if (player.ConnectionId == Context.ConnectionId)
@@ -53,7 +57,10 @@ namespace Sanasoppa.API.Hubs
         {
             var username = Context.User!.GetUsername();
             // create new game and player
-            var game = new Game(gameName.Sanitize());
+            var game = new Game
+            {
+                Name = gameName.Sanitize(),
+            };
             
             var player = await _uow.PlayerRepository.GetPlayerByConnIdAsync(Context.ConnectionId);
             if (player == null)
@@ -108,10 +115,11 @@ namespace Sanasoppa.API.Hubs
                     throw new InvalidOperationException("Can't join to game because it has already started");
                 }
 
-                var player = new Player(Context.ConnectionId, Context.User!.GetUsername()!)
+                var player = await _uow.PlayerRepository.GetPlayerByConnIdAsync(Context.ConnectionId);
+                if (player == null)
                 {
-                    IsDasher = false
-                };
+                    throw new InvalidOperationException("Player not found");
+                }
 
                 game.Players.Add(player);
                 _uow.GameRepository.Update(game);
@@ -164,7 +172,12 @@ namespace Sanasoppa.API.Hubs
                 throw new ArgumentException("Only dasher can start the round");
             }
 
-            var newRound = new Round(game, word);
+            var newRound = new Round
+            {
+                Game = game,
+                GameId = game.Id,
+                Word = word,
+            };
             _uow.RoundRepository.AddRound(newRound);
 
             game.CurrentRound = newRound;
@@ -180,8 +193,15 @@ namespace Sanasoppa.API.Hubs
         {
             explanation = explanation.Sanitize();
             var (game, player) = await GetGameAndPlayer(Context.ConnectionId);
-            var newExplanation = new Explanation(explanation, player.IsDasher ?? false, game.CurrentRound!, player);
-
+            var newExplanation = new Explanation
+            {
+                Text = explanation,
+                IsRight = player.IsDasher ?? false,
+                Round = game.CurrentRound!,
+                RoundId = game.CurrentRound!.Id,
+                Player = player,
+                PlayerId = player.Id
+            };
             _uow.RoundRepository.AddExplanation(game.CurrentRound!, newExplanation);
 
             if (await _uow.Complete())

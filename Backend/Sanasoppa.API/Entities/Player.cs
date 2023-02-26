@@ -4,15 +4,13 @@ namespace Sanasoppa.API.Entities
 {
     public class Player
     {
-        public Player(string connectionId, string username)
+        public Player()
         {
-            ConnectionId = connectionId;
-            Username = username;
             Explanations = new List<Explanation>();
         }
         public int Id { get; set; }
-        public string ConnectionId { get; set; }
-        public string Username { get; set; }
+        public string ConnectionId { get; set; } = default!;
+        public string Username { get; set; } = default!;
         public bool? IsDasher { get; set; }
         public int? GameId { get; set; }
         public Game? Game { get; set; }

@@ -13,9 +13,15 @@ namespace Sanasoppa.API.Data.Configurations
 
             builder.Property(e => e.Text).IsRequired();
 
+            builder.Property(e => e.IsRight).IsRequired();
+
             builder.HasOne(e => e.Player)
-                .WithMany(e => e.Explanations)
+                .WithMany(p => p.Explanations)
                 .HasForeignKey(e => e.PlayerId);
+
+            builder.HasOne(e => e.Round)
+                .WithMany(r => r.Explanations)
+                .HasForeignKey(e => e.RoundId);
         }
     }
 }

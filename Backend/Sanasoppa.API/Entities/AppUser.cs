@@ -4,9 +4,8 @@ namespace Sanasoppa.API.Entities
 {
     public class AppUser : IdentityUser<int>
     {
-        public AppUser(bool hasDefaultPassword)
+        public AppUser()
         {
-            HasDefaultPassword = hasDefaultPassword;
             UserRoles = new List<AppUserRole>();
         }
         public bool HasDefaultPassword { get; set; }

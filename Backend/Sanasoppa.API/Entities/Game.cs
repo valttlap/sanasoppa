@@ -2,17 +2,17 @@
 {
     public class Game
     {
-        public Game(string name, bool hasStarted = false) 
+        public Game() 
         {
-            Name = name;
-            HasStarted = hasStarted;
             Players = new List<Player>();
+            Rounds = new List<Round>();
         }
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = default!;
         public bool HasStarted { get; set; }
         public ICollection<Player> Players { get; set; }
         public int? CurrentRoundId { get; set; }
         public Round? CurrentRound { get; set; }
+        public ICollection<Round> Rounds { get; set; }
     }
 }
