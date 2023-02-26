@@ -40,7 +40,13 @@ namespace Sanasoppa.API.Hubs
 
         private async Task GameListChanged()
         {
-            
+            var gamesTask = _uow.GameRepository.GetNotStartedGamesAsync();
+            var playersTask = _uow.PlayerRepository.GetPlayersNotInGameAsync();
+            await Task.WhenAll(playersTask, gamesTask);
+            var players = playersTask.Result;
+            var games = gamesTask.Result;
+            var playerIds = players.Select(p => p.ConnectionId).ToList();
+            await Clients.Clients(playerIds).SendAsync("GameListUpdated", games);
         }
 
         public async Task<string> CreateGame(string gameName)
@@ -62,7 +68,9 @@ namespace Sanasoppa.API.Hubs
             if (await _uow.Complete())
             {
                 // add player to group for this game
-                await Groups.AddToGroupAsync(player.ConnectionId, game.Name);
+                var addToGroupTask = Groups.AddToGroupAsync(player.ConnectionId, game.Name);
+                var gameListChangedTask = GameListChanged();
+                Task.WaitAll(addToGroupTask, gameListChangedTask);
 
                 // return game id to player
                 return game.Name;
@@ -139,8 +147,10 @@ namespace Sanasoppa.API.Hubs
             if (await _uow.Complete())
             {
                 var dasher = _uow.GameRepository.GetDasherAsync(game);
-                await Clients.GroupExcept(game.Name, dasher.ConnectionId).SendAsync("GameStarted");
-                await Clients.Client(dasher.ConnectionId).SendAsync("StartRound");
+                var gameListChangedTask = GameListChanged();
+                var gameStartedTask = Clients.GroupExcept(game.Name, dasher.ConnectionId).SendAsync("GameStarted");
+                var startRoundTask = Clients.Client(dasher.ConnectionId).SendAsync("StartRound");
+                Task.WaitAll(gameListChangedTask, gameStartedTask, startRoundTask);
             }
         }
 
@@ -202,8 +212,6 @@ namespace Sanasoppa.API.Hubs
 
             return new Tuple<Game, Player>(game, player);
         }
-
-
 
     }
 }
