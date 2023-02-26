@@ -22,15 +22,15 @@ namespace Sanasoppa.API.Controllers
         }
 
         [Authorize(Policy = "RequireModeratorRole")]
-        [HttpPost("register")]
-        public async Task<ActionResult<UserDto>> Register(string username)
+        [HttpPost("add-user")]
+        public async Task<ActionResult<UserDto>> AddUser(string username)
         {
             if (await UserExists(username)) return BadRequest("Username is taken");
 
             var user = new AppUser
             {
                 UserName = username.ToLower(),
-                HasDefaultPassword = true
+                HasDefaultPassword = true,
             };
 
             var result = await _userManager.CreateAsync(user, DEFAULT_PASSWORD);
@@ -58,7 +58,7 @@ namespace Sanasoppa.API.Controllers
 
             return new UserDto
             {
-                Username = user.UserName,
+                Username = user.UserName!,
                 Token = await _tokenService.CreateToken(user),
                 HasDefaultPassword = user.HasDefaultPassword
             };
@@ -70,7 +70,7 @@ namespace Sanasoppa.API.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
 
-            var result = await _userManager.ChangePasswordAsync(user, user.PasswordHash, newPassword);
+            var result = await _userManager.ChangePasswordAsync(user!, user!.PasswordHash!, newPassword);
 
             if (!result.Succeeded)
             {

@@ -8,7 +8,11 @@ namespace Sanasoppa.API.Helpers
     {
         public AutoMapperProfiles()
         {
-            CreateMap<Player, PlayerDto>();
+            CreateMap<Game, GameDto>()
+                .ForMember(dest => dest.Name,
+                    opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Players,
+                    opt => opt.MapFrom(src => src.Players.ToList().Count));
         }
     }
 }

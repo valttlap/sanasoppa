@@ -13,7 +13,7 @@ namespace Sanasoppa.API.Data.Repositories
             _context = context;
             _mapper = mapper;
         }
-        public IGameRepository GameRepository => new GameRepository(_context);
+        public IGameRepository GameRepository => new GameRepository(_context, _mapper);
 
         public IPlayerRepository PlayerRepository => new PlayerRepository(_context);
 

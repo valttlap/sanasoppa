@@ -11,17 +11,24 @@ namespace Sanasoppa.API.Data.Configurations
             builder.HasKey(e => e.Id);
             builder.Property(e => e.Id).ValueGeneratedOnAdd();
 
-            builder.Property(e => e.GameStarted).HasDefaultValue(false).IsRequired();
+            builder.Property(e => e.HasStarted).HasDefaultValue(false).IsRequired();
 
             builder.HasMany(e => e.Players)
                 .WithOne(e => e.Game)
                 .HasForeignKey(e => e.GameId);
 
-            builder.HasOne(e => e.CurrentRound)
+            builder.HasMany(e => e.Rounds)
                 .WithOne(e => e.Game)
-                .HasForeignKey<Round>(e => e.GameId);
+                .HasForeignKey(e => e.GameId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex(g => g.ConnectionId)
+            builder.HasOne(g => g.CurrentRound)
+                .WithOne()
+                .HasForeignKey<Game>(g => g.CurrentRoundId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.HasIndex(g => g.Name)
                 .IsUnique();
         }
     }

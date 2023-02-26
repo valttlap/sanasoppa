@@ -2,6 +2,7 @@
 {
     public class GameDto
     {
-        public int ConnectionId { get; set; }
+        public string Name { get; set; } = default!;
+        public int Players { get; set; }
     }
 }

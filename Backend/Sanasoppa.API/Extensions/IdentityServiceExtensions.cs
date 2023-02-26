@@ -30,7 +30,7 @@ namespace Sanasoppa.API.Extensions
                     {
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding
-                            .UTF8.GetBytes(config["TokenKey"])),
+                            .UTF8.GetBytes(config["TokenKey"] ?? throw new Exception("Token key not found"))),
                         ValidateIssuer = false,
                         ValidateAudience = false
                     };
@@ -56,6 +56,7 @@ namespace Sanasoppa.API.Extensions
             {
                 opt.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
                 opt.AddPolicy("RequireModeratorRole", policy => policy.RequireRole("Admin", "Moderator"));
+                opt.AddPolicy("RequireMember", policy => policy.RequireRole("Admin, Moderator, Member"));
             });
 
             return services;
