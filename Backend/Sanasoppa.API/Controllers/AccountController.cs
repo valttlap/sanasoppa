@@ -22,8 +22,8 @@ namespace Sanasoppa.API.Controllers
         }
 
         [Authorize(Policy = "RequireModeratorRole")]
-        [HttpPost("register")]
-        public async Task<ActionResult<UserDto>> Register(string username)
+        [HttpPost("add-user")]
+        public async Task<ActionResult<UserDto>> AddUser(string username)
         {
             if (await UserExists(username)) return BadRequest("Username is taken");
 

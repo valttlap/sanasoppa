@@ -56,6 +56,7 @@ namespace Sanasoppa.API.Extensions
             {
                 opt.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
                 opt.AddPolicy("RequireModeratorRole", policy => policy.RequireRole("Admin", "Moderator"));
+                opt.AddPolicy("RequireMember", policy => policy.RequireRole("Admin, Moderator, Member"));
             });
 
             return services;
