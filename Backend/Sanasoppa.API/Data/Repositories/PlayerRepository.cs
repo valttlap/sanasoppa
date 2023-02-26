@@ -15,18 +15,29 @@ namespace Sanasoppa.API.Data.Repositories
         {
             _context = context;
         }
-        public async Task<Player> GetPlayerAsync(int id)
+
+        public void AddPlayer(Player player)
+        {
+            _context.Players.Add(player);
+        }
+
+        public async Task<Player?> GetPlayerAsync(int id)
         {
             return await _context.Players.FindAsync(id);
         }
 
-        public async Task<Player> GetPlayerByConnIdAsync(string connectionId)
+        public async Task<Player?> GetPlayerByConnIdAsync(string connectionId)
         {
             return await _context.Players
                 .SingleOrDefaultAsync(x => x.ConnectionId == connectionId);
         }
 
-        public async Task<Game> GetPlayerGameAsync(string connId)
+        public async Task<Player?> GetPlayerByUsernameAsync(string username)
+        {
+            return await _context.Players.SingleOrDefaultAsync(x => x.Username == username);
+        }
+
+        public async Task<Game?> GetPlayerGameAsync(string connId)
         {
             var game = await _context.Players
                 .Where(p => p.ConnectionId == connId)
@@ -35,7 +46,7 @@ namespace Sanasoppa.API.Data.Repositories
             return game;
         }
 
-        public async Task<Game> GetPlayerGameAsync(Player player)
+        public async Task<Game?> GetPlayerGameAsync(Player player)
         {
             if (player == null)
             {
@@ -43,6 +54,13 @@ namespace Sanasoppa.API.Data.Repositories
             }
 
             return await _context.Games.Include(g => g.CurrentRound).Where(g => g.Id == player.GameId).FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<Player>> GetPlayersNotInGameAsync()
+        {
+            return await _context.Players
+                .Where(p => p.GameId == null)
+                .ToListAsync();
         }
 
         public void Update(Player player)

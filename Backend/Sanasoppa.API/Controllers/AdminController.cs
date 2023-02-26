@@ -81,7 +81,7 @@ namespace Sanasoppa.API.Controllers
 
             if (user == null) return NotFound();
 
-            var result = await _userManager.ChangePasswordAsync(user, user.PasswordHash, DEFAULT_PASSWORD);
+            var result = await _userManager.ChangePasswordAsync(user, user.PasswordHash!, DEFAULT_PASSWORD);
 
             if (!result.Succeeded) return BadRequest("Failed to reset password");
 

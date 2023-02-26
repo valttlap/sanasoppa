@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
+using Sanasoppa.API.DTOs;
 using Sanasoppa.API.Entities;
 using Sanasoppa.API.Interfaces;
 
@@ -7,19 +10,21 @@ namespace Sanasoppa.API.Data.Repositories
     public class GameRepository : IGameRepository
     {
         private readonly DataContext _context;
+        private readonly IMapper _mapper;
 
-        public GameRepository(DataContext context)
+        public GameRepository(DataContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
-        public async Task<Game> GetByConnectionIdAsync(int connectionId)
+        public async Task<Game?> GetGameByNameAsync(string name)
         {
             return await _context.Games
-                .SingleOrDefaultAsync(x => x.ConnectionId == connectionId);
+                .SingleOrDefaultAsync(x => x.Name == name);
         }
 
-        public async Task<Game> GetByIdAsync(int id)
+        public async Task<Game?> GetGameByIdAsync(int id)
         {
             return await _context.Games.FindAsync(id);
         }
@@ -37,13 +42,9 @@ namespace Sanasoppa.API.Data.Repositories
 
         public async Task<IEnumerable<Player>> GetPlayersAsync(int gameId)
         {
-            return await _context.Players.Where(p => p.GameId == gameId).ToListAsync();
-        }
-
-        public async Task<int> GetNextConnectionId()
-        {
-            int maxId = await _context.Games.MaxAsync(g => (int?)g.ConnectionId) ?? 0;
-            return maxId + 1;
+            var game = await _context.Games.FindAsync(gameId);
+            if (game == null) throw new ArgumentException("Game not found", nameof(gameId));
+            return game.Players.ToList();
         }
 
         public void AddGame(Game game)
@@ -53,8 +54,14 @@ namespace Sanasoppa.API.Data.Repositories
 
         public async Task<Player> GetDasherAsync(int gameId)
         {
-            var dasher = await _context.Players
-                .SingleOrDefaultAsync(p => p.GameId == gameId && p.IsDasher);
+            var game = await _context.Games.FindAsync(gameId);
+
+            if (game == null)
+            {
+                throw new ArgumentException("Game not found", nameof(gameId));
+            }
+            
+            var dasher = game.Players.SingleOrDefault(p => p.IsDasher ?? false);
             
             if (dasher == null)
             {
@@ -64,10 +71,9 @@ namespace Sanasoppa.API.Data.Repositories
             return dasher;
         }
 
-        public async Task<Player> GetDasherAsync(Game game)
+        public Player GetDasherAsync(Game game)
         {
-            var dasher = await _context.Players
-                .SingleOrDefaultAsync(p => p.GameId == game.Id && p.IsDasher);
+            var dasher = game.Players.SingleOrDefault(p => p.IsDasher ?? false);
 
             if (dasher == null)
             {
@@ -77,5 +83,12 @@ namespace Sanasoppa.API.Data.Repositories
             return dasher;
         }
 
+        public async Task<IEnumerable<GameDto>> GetNotStartedGamesAsync()
+        {
+            return await _context.Games
+                .Where(g => !g.HasStarted)
+                .ProjectTo<GameDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+        }
     }
 }

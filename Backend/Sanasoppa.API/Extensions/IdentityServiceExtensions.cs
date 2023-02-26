@@ -30,7 +30,7 @@ namespace Sanasoppa.API.Extensions
                     {
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding
-                            .UTF8.GetBytes(config["TokenKey"])),
+                            .UTF8.GetBytes(config["TokenKey"] ?? throw new Exception("Token key not found"))),
                         ValidateIssuer = false,
                         ValidateAudience = false
                     };

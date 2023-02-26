@@ -27,10 +27,9 @@ namespace Sanasoppa.API.Controllers
         {
             if (await UserExists(username)) return BadRequest("Username is taken");
 
-            var user = new AppUser
+            var user = new AppUser(true)
             {
-                UserName = username.ToLower(),
-                HasDefaultPassword = true
+                UserName = username.ToLower()
             };
 
             var result = await _userManager.CreateAsync(user, DEFAULT_PASSWORD);
@@ -58,7 +57,7 @@ namespace Sanasoppa.API.Controllers
 
             return new UserDto
             {
-                Username = user.UserName,
+                Username = user.UserName!,
                 Token = await _tokenService.CreateToken(user),
                 HasDefaultPassword = user.HasDefaultPassword
             };
@@ -70,7 +69,7 @@ namespace Sanasoppa.API.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
 
-            var result = await _userManager.ChangePasswordAsync(user, user.PasswordHash, newPassword);
+            var result = await _userManager.ChangePasswordAsync(user!, user!.PasswordHash!, newPassword);
 
             if (!result.Succeeded)
             {
