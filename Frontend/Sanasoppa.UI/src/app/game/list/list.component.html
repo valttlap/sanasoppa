@@ -1,0 +1,7 @@
+<button class="btn btn-primary" routerLink="/create">Luo peli</button>
+<ul>
+  <li *ngFor="let game of games">
+    {{ game.name }}
+    <button class="btn btn-primary" (click)="joinGame(game.name)">Liity</button>
+  </li>
+</ul>

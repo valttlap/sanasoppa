@@ -12,8 +12,8 @@ using Sanasoppa.API.Data;
 namespace Sanasoppa.API.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230226230721_Initial")]
-    partial class Initial
+    [Migration("20230227005727_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

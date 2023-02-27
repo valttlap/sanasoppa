@@ -42,7 +42,10 @@ namespace Sanasoppa.API.Data.Repositories
 
         public async Task<IEnumerable<Player>> GetPlayersAsync(int gameId)
         {
-            var game = await _context.Games.FindAsync(gameId);
+            var game = await _context.Games
+                .Include(g => g.Players)
+                .Where(g => g.Id == gameId)
+                .SingleOrDefaultAsync();
             if (game == null) throw new ArgumentException("Game not found", nameof(gameId));
             return game.Players.ToList();
         }
@@ -88,6 +91,31 @@ namespace Sanasoppa.API.Data.Repositories
             return await _context.Games
                 .Where(g => !g.HasStarted)
                 .ProjectTo<GameDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<PlayerDto>> GetGamePlayersAsync(int gameId)
+        {
+            return await _context.Players
+                .Where(p => p.GameId == gameId)
+                .ProjectTo<PlayerDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<PlayerDto>> GetGamePlayersAsync(Game game)
+        {
+            return await _context.Players
+                .Where(p => p.GameId == game.Id)
+                .ProjectTo<PlayerDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<PlayerDto>> GetGamePlayersAsync(string gameName)
+        {            
+            return await _context.Players
+                .Include(p => p.Game)
+                .Where(p => p.Game.Name == gameName)
+                .ProjectTo<PlayerDto>(_mapper.ConfigurationProvider)
                 .ToListAsync();
         }
     }

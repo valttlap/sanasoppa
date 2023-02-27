@@ -13,6 +13,11 @@ namespace Sanasoppa.API.Helpers
                     opt => opt.MapFrom(src => src.Name))
                 .ForMember(dest => dest.Players,
                     opt => opt.MapFrom(src => src.Players.ToList().Count));
+            CreateMap<Player, PlayerDto>()
+                .ForMember(dest => dest.Name,
+                    opt => opt.MapFrom(src => src.Username))
+                .ForMember(dest => dest.IsDasher,
+                    opt => opt.MapFrom(src => src.IsDasher));
         }
     }
 }

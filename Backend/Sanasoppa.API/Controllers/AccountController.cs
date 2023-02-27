@@ -13,7 +13,7 @@ namespace Sanasoppa.API.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly ITokenService _tokenService;
-        private const string DEFAULT_PASSWORD = "SanaSoppa2023";
+        private const string DEFAULT_PASSWORD = "SanaSoppa2023!";
 
         public AccountController(UserManager<AppUser> userManager, ITokenService tokenService)
         {

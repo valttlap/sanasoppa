@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Sanasoppa.API.Data.Repositories;
 using Sanasoppa.API.Entities;
 using Sanasoppa.API.Extensions;
 using Sanasoppa.API.Interfaces;
 
 namespace Sanasoppa.API.Hubs
 {
-    [Authorize(Policy = "RequireMember")]
+    [Authorize(Policy = "RequireMemberRole")]
     public class GameHub : Hub
     {
         private readonly IUnitOfWork _uow;
@@ -31,7 +30,7 @@ namespace Sanasoppa.API.Hubs
                 };
                 _uow.PlayerRepository.AddPlayer(player);
             }
-            else if (player.ConnectionId == Context.ConnectionId)
+            else if (player.ConnectionId != Context.ConnectionId)
             {
                 player.ConnectionId = Context.ConnectionId;
                 _uow.PlayerRepository.Update(player);
@@ -62,7 +61,7 @@ namespace Sanasoppa.API.Hubs
                 Name = gameName.Sanitize(),
             };
             
-            var player = await _uow.PlayerRepository.GetPlayerByConnIdAsync(Context.ConnectionId);
+            var player = await _uow.PlayerRepository.GetPlayerByUsernameAsync(username);
             if (player == null)
             {
                 throw new InvalidOperationException("Player not found");
@@ -115,6 +114,8 @@ namespace Sanasoppa.API.Hubs
                     throw new InvalidOperationException("Can't join to game because it has already started");
                 }
 
+                Console.WriteLine(Context.ConnectionId);
+
                 var player = await _uow.PlayerRepository.GetPlayerByConnIdAsync(Context.ConnectionId);
                 if (player == null)
                 {
@@ -130,8 +131,8 @@ namespace Sanasoppa.API.Hubs
                     await Groups.AddToGroupAsync(player.ConnectionId, game.Name);
 
                     // notify all players in the game that a new player has joined
-                    var playerNames = (await _uow.GameRepository.GetPlayersAsync(game.Id)).Select(p => p?.Username);
-                    await Clients.Group(game.Name).SendAsync("PlayerJoined", playerNames);
+                    var players = (await _uow.GameRepository.GetGamePlayersAsync(game.Id));
+                    await Clients.Group(game.Name).SendAsync("PlayerJoined", players);
                 }
                 else
                 {

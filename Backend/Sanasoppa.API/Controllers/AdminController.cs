@@ -9,7 +9,7 @@ namespace Sanasoppa.API.Controllers
     public class AdminController : BaseApiController
     {
         private readonly UserManager<AppUser> _userManager;
-        private const string DEFAULT_PASSWORD = "SanaSoppa2023";
+        private const string DEFAULT_PASSWORD = "SanaSoppa2023!";
 
         public AdminController(UserManager<AppUser> userManager)
         {
