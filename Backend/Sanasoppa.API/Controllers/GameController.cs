@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sanasoppa.API.DTOs;
+using Sanasoppa.API.Entities;
+using Sanasoppa.API.Extensions;
 using Sanasoppa.API.Interfaces;
 
 namespace Sanasoppa.API.Controllers
@@ -9,23 +12,36 @@ namespace Sanasoppa.API.Controllers
     public class GameController : BaseApiController
     {
         private readonly IUnitOfWork _uow;
+        private readonly IMapper _mapper;
 
-        public GameController(IUnitOfWork uow)
+        public GameController(IUnitOfWork uow, IMapper mapper)
         {
             _uow = uow;
+            _mapper = mapper;
         }
 
-        [HttpGet("{name}")]
-        public async Task<ActionResult<GameDto>> GetGame(string name)
+        /// <summary>
+        /// Retrieves the game with the specified name.
+        /// </summary>
+        /// <param name="gameName">The name of the game to retrieve.</param>
+        /// <returns>An ActionResult containing a GameDto object if the game exists, or NotFound() if it does not.</returns>
+        [HttpGet("{gameName}")]
+        public async Task<ActionResult<GameDto>> GetGame(string gameName)
         {
-            var game = await _uow.GameRepository.GetGameByNameAsync(name);
+            var game = await _uow.GameRepository.GetGameAsync(gameName);
             if (game == null)
             {
                 return NotFound();
             }
-            return Ok(game);
+            var gameDto = _mapper.Map<GameDto>(game);
+            return Ok(gameDto);
         }
 
+
+        /// <summary>
+        /// Retrieves a list of games that have not yet started.
+        /// </summary>
+        /// <returns>An ActionResult containing a list of GameDto objects representing the games that have not started.</returns>
         [HttpGet("not-started")]
         public async Task<ActionResult<GameDto>> GetNotStartedGames()
         {
@@ -34,10 +50,15 @@ namespace Sanasoppa.API.Controllers
             return Ok(games);
         }
 
-        [HttpGet("players/{name}")]
-        public async Task<ActionResult<IEnumerable<PlayerDto>>> GetGamePlayers(string name)
+        /// <summary>
+        /// Retrieves a list of players in the specified game.
+        /// </summary>
+        /// <param name="gameName">The name of the game to retrieve the players for.</param>
+        /// <returns>An ActionResult containing a list of PlayerDto objects representing the players in the game.</returns>
+        [HttpGet("players/{gameName}")]
+        public async Task<ActionResult<IEnumerable<PlayerDto>>> GetGamePlayers(string gameName)
         {
-            var games = await _uow.GameRepository.GetGamePlayersAsync(name);
+            var games = await _uow.GameRepository.GetPlayerDtosAsync(gameName);
             return Ok(games);
         }
     }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Sanasoppa.API.DTOs;
 using Sanasoppa.API.Entities;
 using Sanasoppa.API.Extensions;
 using Sanasoppa.API.Interfaces;
@@ -36,130 +37,69 @@ namespace Sanasoppa.API.Hubs
                 _uow.PlayerRepository.Update(player);
             }
 
+            player.IsOnline = true;
+            _uow.PlayerRepository.Update(player);
+
+            var httpContext = Context.GetHttpContext();
+            var gameName = httpContext?.Request.Query["game"].ToString();
+
+            if (string.IsNullOrWhiteSpace(gameName))
+            {
+                throw new HubException("Name of the game was not given");
+            }
+
+            gameName = gameName.Sanitize();
+            
+            await _uow.GameRepository.AddPlayerToGameAsync(gameName, player);
+            await Groups.AddToGroupAsync(player.ConnectionId, gameName!);
+
             if (_uow.HasChanges()) await _uow.Complete();
 
-            await Clients.Caller.SendAsync("Joined to gamehub");
+            var players = await _uow.GameRepository.GetPlayerDtosAsync(gameName);
+            await Clients.Group(gameName).SendAsync("PlayerJoined", players);
         }
 
-        private async Task GameListChanged()
+        public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            var gamesTask = _uow.GameRepository.GetNotStartedGamesAsync();
-            var playersTask = _uow.PlayerRepository.GetPlayersNotInGameAsync();
-            await Task.WhenAll(playersTask, gamesTask);
-            var players = playersTask.Result;
-            var games = gamesTask.Result;
-            var playerIds = players.Select(p => p.ConnectionId).ToList();
-            await Clients.Clients(playerIds).SendAsync("GameListUpdated", games);
-        }
-
-        public async Task<string> CreateGame(string gameName)
-        {
-            var username = Context.User!.GetUsername();
-            // create new game and player
-            var game = new Game
+            var player = await _uow.PlayerRepository.GetPlayerByConnIdAsync(Context.ConnectionId);
+            if (player == null) return;
+            player.IsOnline = false;
+            if (player.GameId == null)
             {
-                Name = gameName.Sanitize(),
-            };
-            
-            var player = await _uow.PlayerRepository.GetPlayerByUsernameAsync(username);
-            if (player == null)
-            {
-                throw new InvalidOperationException("Player not found");
+                await _uow.Complete();
+                return;
             }
-            player.IsDasher = true;
-            _uow.PlayerRepository.Update(player);
-            game.Players.Add(player);
-            _uow.GameRepository.AddGame(game);
-
-            if (await _uow.Complete())
-            {
-                // add player to group for this game
-                var addToGroupTask = Groups.AddToGroupAsync(player.ConnectionId, game.Name);
-                var gameListChangedTask = GameListChanged();
-                Task.WaitAll(addToGroupTask, gameListChangedTask);
-
-                // return game id to player
-                return game.Name;
-            } else
-            {
-                throw new Exception("An error occured while creating a game");
-            }
+            var game = await _uow.GameRepository.GetWholeGame((int)player.GameId);
+            if (game == null) return;
+            if (game.Players.Where(p => p != player).Any(p => p.IsOnline)) return;
+            _uow.GameRepository.RemoveGameAsync(game);
         }
 
-        public async Task<IEnumerable<string?>> GetPlayers(string gameName)
+
+        public async Task<IEnumerable<PlayerDto?>> GetPlayers(string gameName)
         {
-            var game = await _uow.GameRepository.GetGameByNameAsync(gameName.Sanitize());
+            var game = await _uow.GameRepository.GetGameAsync(gameName.Sanitize());
 
             if (game == null)
             {
-                throw new ArgumentNullException(nameof(gameName), "Invalid game name");
+                throw new ArgumentException("Invalid game name", nameof(gameName));
             }
-            return (await _uow.GameRepository.GetPlayersAsync(game.Id)).Select(p => p?.Username);
+            return await _uow.GameRepository.GetPlayerDtosAsync(game.Id);
 
         }
 
-        public async Task JoinGame(string gameName)
+
+        public async Task StartGame(string gameName)
         {
-            try
-            {
-                var game = await _uow.GameRepository.GetGameByNameAsync(gameName.Sanitize());
-
-                if (game == null)
-                {
-                    throw new ArgumentNullException(nameof(gameName), "Invalid game ID");
-                }
-
-                if (game.HasStarted)
-                {
-                    throw new InvalidOperationException("Can't join to game because it has already started");
-                }
-
-                Console.WriteLine(Context.ConnectionId);
-
-                var player = await _uow.PlayerRepository.GetPlayerByConnIdAsync(Context.ConnectionId);
-                if (player == null)
-                {
-                    throw new InvalidOperationException("Player not found");
-                }
-
-                game.Players.Add(player);
-                _uow.GameRepository.Update(game);
-
-                if (await _uow.Complete())
-                {
-                    // add player to group for this game
-                    await Groups.AddToGroupAsync(player.ConnectionId, game.Name);
-
-                    // notify all players in the game that a new player has joined
-                    var players = (await _uow.GameRepository.GetGamePlayersAsync(game.Id));
-                    await Clients.Group(game.Name).SendAsync("PlayerJoined", players);
-                }
-                else
-                {
-                    throw new Exception("An error occured while joining to game");
-                }
-               
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw;
-            }
-        }
-
-        public async Task StartGame()
-        {
-            var (game, _) = await GetGameAndPlayer(Context.ConnectionId);
-            game.HasStarted = true;
-            _uow.GameRepository.Update(game);
+            await _uow.GameRepository.StartGameAsync(gameName.Sanitize());
+            
 
             if (await _uow.Complete())
             {
-                var dasher = _uow.GameRepository.GetDasherAsync(game);
-                var gameListChangedTask = GameListChanged();
-                var gameStartedTask = Clients.GroupExcept(game.Name, dasher.ConnectionId).SendAsync("GameStarted");
+                var dasher = await _uow.GameRepository.GetDasherAsync(gameName);
+                var gameStartedTask = Clients.GroupExcept(gameName, dasher!.ConnectionId).SendAsync("WaitDasher", dasher.Username);
                 var startRoundTask = Clients.Client(dasher.ConnectionId).SendAsync("StartRound");
-                Task.WaitAll(gameListChangedTask, gameStartedTask, startRoundTask);
+                Task.WaitAll(gameStartedTask, startRoundTask);
             }
         }
 
@@ -211,21 +151,50 @@ namespace Sanasoppa.API.Hubs
             }
         }
 
+        public async Task EndRound()
+        {
+            var (game, _) = await GetGameAndPlayer(Context.ConnectionId);
+            game.CurrentRound = null;
+            _uow.GameRepository.Update(game);
+            var currentDasher = _uow.GameRepository.GetDasherAsync(game);
+            var nextDasher = ChangeDasher(game, currentDasher!);
+            if (await _uow.Complete())
+            {
+                var waitDasherTask = Clients.GroupExcept(game.Name, nextDasher.ConnectionId).SendAsync("WaitDasher", nextDasher.Username);
+                var startRoundTask = Clients.Client(nextDasher.ConnectionId).SendAsync("StartRound");
+                Task.WaitAll(waitDasherTask, startRoundTask);
+            }
+        }
+
+        private Player ChangeDasher(Game game, Player previousDasher)
+        {
+            var players = game.Players.OrderBy(p => p.Id).ToList();
+            var index = players.FindIndex(p => p == previousDasher);
+            var nextDasher = players.Skip(index + 1)
+                .FirstOrDefault(p => !p.IsDasher ?? true) ?? players.FirstOrDefault(p => !p.IsDasher ?? true);
+            nextDasher!.IsDasher = true;
+            _uow.PlayerRepository.Update(nextDasher);
+            previousDasher.IsDasher = false;
+            _uow.PlayerRepository.Update(previousDasher);
+            return nextDasher;
+        }
+
 
 
         private async Task<Tuple<Game, Player>> GetGameAndPlayer(string connectionId)
         {
-            var playerTask = _uow.PlayerRepository.GetPlayerByConnIdAsync(connectionId);
-            var gameTask = _uow.PlayerRepository.GetPlayerGameAsync(connectionId);
-            await Task.WhenAll(playerTask, gameTask);
-            var player = playerTask.Result;
-            var game = gameTask.Result;
-
+            var player = await _uow.PlayerRepository.GetPlayerByConnIdAsync(connectionId);
             if (player == null)
             {
                 throw new InvalidOperationException("Player not found for connection ID: " + connectionId);
             }
+            if (player.GameId == null)
+            {
+                throw new InvalidOperationException("Player is not in any game");
+            }
 
+            var game = await _uow.GameRepository.GetWholeGame((int)player.GameId);
+            
             if (game == null)
             {
                 throw new InvalidOperationException("Game not found for connection ID: " + connectionId);

@@ -11,11 +11,11 @@ namespace Sanasoppa.API.Data
             if (await userManager.Users.AnyAsync()) return;
 
             var roles = new List<AppRole>
-    {
-        new AppRole{Name = "Member"},
-        new AppRole{Name = "Admin"},
-        new AppRole{Name = "Moderator"},
-    };
+            {
+                new AppRole{Name = "Member"},
+                new AppRole{Name = "Admin"},
+                new AppRole{Name = "Moderator"},
+            };
 
             foreach (var role in roles)
             {

@@ -28,6 +28,12 @@ namespace Sanasoppa.API.Data.Configurations
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            builder.HasOne(g => g.CurrentGameState)
+                .WithOne()
+                .HasForeignKey<Game>(g => g.GameState)
+                .IsRequired(true)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasIndex(g => g.Name)
                 .IsUnique();
         }
