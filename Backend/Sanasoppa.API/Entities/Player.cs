@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Sanasoppa.API.Entities
 {
     public class Player
@@ -7,6 +5,7 @@ namespace Sanasoppa.API.Entities
         public Player()
         {
             Explanations = new List<Explanation>();
+            Scores = new List<Score>();
         }
         public int Id { get; set; }
         public string ConnectionId { get; set; } = default!;
@@ -16,5 +15,6 @@ namespace Sanasoppa.API.Entities
         public int? GameId { get; set; }
         public Game? Game { get; set; }
         public List<Explanation> Explanations { get; set; }
+        public List<Score> Scores { get; set; }
     }
 }

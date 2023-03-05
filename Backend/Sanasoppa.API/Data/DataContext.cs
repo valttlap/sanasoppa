@@ -18,6 +18,7 @@ namespace Sanasoppa.API.Data
         public DbSet<Round> Rounds { get; set; } = default!;
         public DbSet<Explanation> Explanation { get; set; } = default!;
         public DbSet<GameState> GameStates { get; set; } = default!;
+        public DbSet<Score> Scores { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -29,6 +30,7 @@ namespace Sanasoppa.API.Data
             builder.ApplyConfiguration(new AppRoleConfiguration());
             builder.ApplyConfiguration(new AppUserConfiguration());
             builder.ApplyConfiguration(new GameStateConfiguration());
+            builder.ApplyConfiguration(new ScoreConfiguration());
         }
     }
 }

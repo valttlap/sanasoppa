@@ -17,11 +17,13 @@ namespace Sanasoppa.API.Data.Configurations
 
             builder.HasOne(e => e.Player)
                 .WithMany(p => p.Explanations)
-                .HasForeignKey(e => e.PlayerId);
+                .HasForeignKey(e => e.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(e => e.Round)
                 .WithMany(r => r.Explanations)
-                .HasForeignKey(e => e.RoundId);
+                .HasForeignKey(e => e.RoundId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

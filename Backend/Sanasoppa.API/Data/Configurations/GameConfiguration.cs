@@ -15,7 +15,8 @@ namespace Sanasoppa.API.Data.Configurations
 
             builder.HasMany(e => e.Players)
                 .WithOne(e => e.Game)
-                .HasForeignKey(e => e.GameId);
+                .HasForeignKey(e => e.GameId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasMany(e => e.Rounds)
                 .WithOne(e => e.Game)

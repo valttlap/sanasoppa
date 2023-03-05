@@ -15,11 +15,13 @@ namespace Sanasoppa.API.Data.Configurations
 
             builder.HasMany(e => e.Explanations)
                 .WithOne(e => e.Player)
-                .HasForeignKey(e => e.PlayerId);
+                .HasForeignKey(e => e.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(e => e.Game)
                 .WithMany(e => e.Players)
-                .HasForeignKey(e => e.GameId);
+                .HasForeignKey(e => e.GameId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasIndex(e => e.ConnectionId)
                 .IsUnique();
