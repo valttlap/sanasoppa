@@ -58,8 +58,12 @@ namespace Sanasoppa.API.Controllers
         [HttpGet("players/{gameName}")]
         public async Task<ActionResult<IEnumerable<PlayerDto>>> GetGamePlayers(string gameName)
         {
-            var games = await _uow.GameRepository.GetPlayerDtosAsync(gameName);
-            return Ok(games);
+            var game = await _uow.GameRepository.GetGameWithPlayersAsync(gameName);
+            if (game == null)
+            {
+                return NotFound("Game not found");
+            }
+            return Ok(_mapper.Map<IEnumerable<PlayerDto>>(game.Players));
         }
     }
 }

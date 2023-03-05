@@ -39,6 +39,8 @@ namespace Sanasoppa.API.Interfaces
         /// <param name="gameName">The name of the game to re
         /// <returns>Returns the game with the specified name
         Task<Game?> GetGameWithPlayersAsync(string gameName);
+        Task<Game?> GetWholeGameAsync(int id);
+        Task<Game?> GetWholeGameAsync(string gameName);
 
         /// <summary>
         /// Get all games that have not started yet.
@@ -46,68 +48,13 @@ namespace Sanasoppa.API.Interfaces
         /// <returns>Returns a collection of all games that have not started yet.</returns>
         Task<IEnumerable<GameDto?>> GetNotStartedGamesAsync();
 
-        /// <summary>
-        /// Get all players in a game.
-        /// </summary>
-        /// <param name="id">The id of the game to retrieve the players for.</param>
-        /// <returns>Returns a collection of all players in the specified game, or an empty collection if the game does not exist or has no players.</returns>
-        Task<IEnumerable<Player?>> GetPlayersAsync(int id);
-
-        /// <summary>
-        /// Get all players in a game.
-        /// </summary>
-        /// <param name="gameName">The name of the game to retrieve the players for.</param>
-        /// <returns>Returns a collection of all players in the specified game, or an empty collection if the game does not exist or has no players.</returns>
-        Task<IEnumerable<Player?>> GetPlayersAsync(string gameName);
-
-        /// <summary>
-        /// Get all players in a game.
-        /// </summary>
-        /// <param name="game">The game to retrieve the players for.</param>
-        /// <returns>Returns a collection of all players in the specified game, or an empty collection if the game does not exist or has no players.</returns>
-        Task<IEnumerable<Player?>> GetPlayersAsync(Game game);
-
-        /// <summary>
-        /// Get all player DTOs in a game.
-        /// </summary>
-        /// <param name="id">The id of the game to retrieve the player DTOs for.</param>
-        /// <returns>Returns a collection of all player DTOs in the specified game, or an empty collection if the game does not exist or has no players.</returns>
-        Task<IEnumerable<PlayerDto?>> GetPlayerDtosAsync(int id);
-
-        /// <summary>
-        /// Get all player DTOs in a game.
-        /// </summary>
-        /// <param name="gameName">The name of the game to retrieve the player DTOs for.</param>
-        /// <returns>Returns a collection of all player DTOs in the specified game, or an empty collection if the game does not exist or has no players.</returns>
-        Task<IEnumerable<PlayerDto?>> GetPlayerDtosAsync(string gameName);
-
-        /// <summary>
-        /// Get all player DTOs in a game.
-        /// </summary>
-        /// <param name="game">The game to retrieve the player DTOs for.</param>
-        /// <returns>Returns a collection of all player DTOs in the specified game, or an empty collection if the game does not exist or has no players.</returns>
-        Task<IEnumerable<PlayerDto?>> GetPlayerDtosAsync(Game game);
 
         /// <summary>
         /// Get the dasher in a game.
         /// </summary>
-        /// <param name="gameName">The name of the game to retrieve the dasher for.</param>
+        /// <param name="game">The game object to retrieve the dasher for.</param>
         /// <returns>Returns the dasher in the specified game, or null if the game does not exist or has no dasher.</returns>
-        Task<Player?> GetDasherAsync(string gameName);
-
-        /// <summary>
-        /// Get the dasher in a game.
-        /// </summary>
-        /// <param name="id">The id of the game to retrieve the dasher for.</param>
-        /// <returns>Returns the dasher in the specified game, or null if the game does not exist or has no dasher.</returns>
-        Task<Player?> GetDasherAsync(int id);
-
-        /// <summary>
-        /// Get the dasher in a game.
-        /// </summary>
-        /// <param name="game">The game to retrieve the dasher for.</param>
-        /// <returns>Returns the dasher in the specified game, or null if the game does not exist or has no dasher.</returns>
-        Player? GetDasherAsync(Game game);
+        Player? GetDasher(Game game);
 
 
         /// <summary>
@@ -124,8 +71,6 @@ namespace Sanasoppa.API.Interfaces
         /// <returns>Returns true if a game with the specified name exists, false otherwise.</returns>
         Task<bool> GameExistsAsync(string gameName);
 
-        Task<Game?> GetWholeGame(int id);
-
         /// <summary>
         /// Add a new game to the database.
         /// </summary>
@@ -141,20 +86,6 @@ namespace Sanasoppa.API.Interfaces
         /// <summary>
         /// Add a player to a game.
         /// </summary>
-        /// <param name="gameName">The name of the game to add the player to.</param>
-        /// <param name="playerName">The name of the player to add.</param>
-        Task AddPlayerToGameAsync(string gameName, string playerName);
-
-        /// <summary>
-        /// Add a player to a game.
-        /// </summary>
-        /// <param name="id">The id of the game to add the player to.</param>
-        /// <param name="playerName">The name of the player to add.</param>
-        Task AddPlayerToGameAsync(int id, string playerName);
-
-        /// <summary>
-        /// Add a player to a game.
-        /// </summary>
         /// <param name="game">The game to add the player to.</param>
         /// <param name="playerName">The name of the player to add.</param>
         Task AddPlayerToGameAsync(Game game, string playerName);
@@ -162,85 +93,28 @@ namespace Sanasoppa.API.Interfaces
         /// <summary>
         /// Add a player to a game.
         /// </summary>
-        /// <param name="gameName">The name of the game to add the player to.</param>
-        /// <param name="player">The player object to add.</param>
-        Task AddPlayerToGameAsync(string gameName, Player player);
-
-        /// <summary>
-        /// Add a player to a game.
-        /// </summary>
-        /// <param name="id">The id of the game to add the player to.</param>
-        /// <param name="player">The player object to add.</param>
-        Task AddPlayerToGameAsync(int id, Player player);
-
-        /// <summary>
-        /// Add a player to a game.
-        /// </summary>
         /// <param name="game">The game to add the player to.</param>
         /// <param name="player">The player object to add.</param>
-        void AddPlayerToGameAsync(Game game, Player player);
-
-        /// <summary>
-        /// Remove a player from a game.
-        /// </summary>
-        /// <param name="gameName">The name of the game to remove the player from.</param>
-        /// <param name="playerName">The name of the player to remove.</param>
-        Task RemovePlayerFromGameAsync(string gameName, string playerName);
-
-        /// <summary>
-        /// Remove a player from a game.
-        /// </summary>
-        /// <param name="id">The id of the game to remove the player from.</param>
-        /// <param name="playerName">The name of the player to remove.</param>
-        Task RemovePlayerFromGameAsync(int id, string playerName);
+        void AddPlayerToGame(Game game, Player player);
 
         /// <summary>
         /// Remove a player from a game.
         /// </summary>
         /// <param name="game">The game to remove the player from.</param>
         /// <param name="playerName">The name of the player to remove.</param>
-        void RemovePlayerFromGameAsync(Game game, string playerName);
-
-        /// <summary>
-        /// Sets the <see cref="Game.HasStarted"/> property to true, indicating that the game has started.
-        /// </summary>
-        /// <param name="gameName">The name of the game to start.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        Task StartGameAsync(string gameName);
-
-        /// <summary>
-        /// Sets the <see cref="Game.HasStarted"/> property to true, indicating that the game has started.
-        /// </summary>
-        /// <param name="id">The id of the game to start.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        Task StartGameAsync(int id);
+        void RemovePlayerFromGame(Game game, string playerName);
 
         /// <summary>
         /// Sets the <see cref="Game.HasStarted"/> property to true, indicating that the game has started.
         /// </summary>
         /// <param name="id">The game to start.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        void StartGameAsync(Game game);
-
-        /// <summary>
-        /// Removes the game with the specified name from the data store.
-        /// </summary>
-        /// <param name="gameName">The name of the game to remove.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        Task RemoveGameAsync(string gameName);
-
-        /// <summary>
-        /// Removes the game with the id from the data store.
-        /// </summary>
-        /// <param name="id">The name of the game to remove.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        Task RemoveGameAsync(int id);
+        void StartGame(Game game);
 
         /// <summary>
         /// Removes the game from the data store.
         /// </summary>
         /// <param name="game">The game to remove.</param>
-        void RemoveGameAsync(Game game);
+        void RemoveGame(Game game);
 
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Sanasoppa.API.DTOs;
 using Sanasoppa.API.Entities;
@@ -11,10 +12,12 @@ namespace Sanasoppa.API.Hubs
     public class GameHub : Hub
     {
         private readonly IUnitOfWork _uow;
+        private readonly IMapper _mapper;
 
-        public GameHub(IUnitOfWork uow)
+        public GameHub(IUnitOfWork uow, IMapper mapper)
         {
             _uow = uow;
+            _mapper = mapper;
         }
 
         public override async Task OnConnectedAsync()
@@ -49,13 +52,19 @@ namespace Sanasoppa.API.Hubs
             }
 
             gameName = gameName.Sanitize();
+
+            var game = await _uow.GameRepository.GetGameWithPlayersAsync(gameName);
+            if (game == null)
+            {
+                throw new HubException("Game doesn't exist");
+            }
+            _uow.GameRepository.AddPlayerToGame(game, player);
             
-            await _uow.GameRepository.AddPlayerToGameAsync(gameName, player);
             await Groups.AddToGroupAsync(player.ConnectionId, gameName!);
 
             if (_uow.HasChanges()) await _uow.Complete();
 
-            var players = await _uow.GameRepository.GetPlayerDtosAsync(gameName);
+            var players = _mapper.Map<ICollection<PlayerDto>>(game.Players);
             await Clients.Group(gameName).SendAsync("PlayerJoined", players);
         }
 
@@ -69,22 +78,26 @@ namespace Sanasoppa.API.Hubs
                 await _uow.Complete();
                 return;
             }
-            var game = await _uow.GameRepository.GetWholeGame((int)player.GameId);
+            var game = await _uow.GameRepository.GetGameWithPlayersAsync(player.GameId.Value);
             if (game == null) return;
             if (game.Players.Where(p => p != player).Any(p => p.IsOnline)) return;
-            _uow.GameRepository.RemoveGameAsync(game);
+            _uow.GameRepository.RemoveGame(game);
+            if(_uow.HasChanges())
+            {
+                await _uow.Complete();
+            }
         }
 
 
         public async Task<IEnumerable<PlayerDto?>> GetPlayers(string gameName)
         {
-            var game = await _uow.GameRepository.GetGameAsync(gameName.Sanitize());
+            var game = await _uow.GameRepository.GetGameWithPlayersAsync(gameName.Sanitize());
 
             if (game == null)
             {
                 throw new ArgumentException("Invalid game name", nameof(gameName));
             }
-            return await _uow.GameRepository.GetPlayerDtosAsync(game.Id);
+            return _mapper.Map<IEnumerable<PlayerDto>>(game.Players);
 
         }
 
@@ -95,12 +108,17 @@ namespace Sanasoppa.API.Hubs
         /// <param name="gameName">The name of the game you want to start.</param>
         public async Task StartGame(string gameName)
         {
-            await _uow.GameRepository.StartGameAsync(gameName.Sanitize());
+            var game = await _uow.GameRepository.GetGameAsync(gameName.Sanitize());
+            if (game == null)
+            {
+                throw new ArgumentException("Invalid game name", nameof(gameName));
+            }
+            _uow.GameRepository.StartGame(game);
             
 
             if (await _uow.Complete())
             {
-                var dasher = await _uow.GameRepository.GetDasherAsync(gameName);
+                var dasher = _uow.GameRepository.GetDasher(game);
                 var gameStartedTask = Clients.GroupExcept(gameName, dasher!.ConnectionId).SendAsync("WaitDasher", dasher.Username);
                 var startRoundTask = Clients.Client(dasher.ConnectionId).SendAsync("StartRound");
                 Task.WaitAll(gameStartedTask, startRoundTask);
@@ -166,7 +184,7 @@ namespace Sanasoppa.API.Hubs
             game.CurrentRound = null;
             game.GameState = 2;
             _uow.GameRepository.Update(game);
-            var currentDasher = _uow.GameRepository.GetDasherAsync(game);
+            var currentDasher = _uow.GameRepository.GetDasher(game);
             var nextDasher = ChangeDasher(game, currentDasher!);
             if (await _uow.Complete())
             {
@@ -203,7 +221,7 @@ namespace Sanasoppa.API.Hubs
                 throw new InvalidOperationException("Player is not in any game");
             }
 
-            var game = await _uow.GameRepository.GetWholeGame((int)player.GameId);
+            var game = await _uow.GameRepository.GetWholeGameAsync(player.GameId.Value);
             
             if (game == null)
             {
