@@ -29,7 +29,8 @@ namespace Sanasoppa.API.Hubs
             var game = new Game
             {
                 Name = gameName,
-                HasStarted = false
+                HasStarted = false,
+                GameState = 0,
             };
 
             var player = await _uow.PlayerRepository.GetPlayerByUsernameAsync(Context.User!.GetUsername()!);

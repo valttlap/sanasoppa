@@ -89,6 +89,10 @@ namespace Sanasoppa.API.Hubs
         }
 
 
+        /// <summary>
+        /// It starts a game.
+        /// </summary>
+        /// <param name="gameName">The name of the game you want to start.</param>
         public async Task StartGame(string gameName)
         {
             await _uow.GameRepository.StartGameAsync(gameName.Sanitize());
@@ -103,6 +107,10 @@ namespace Sanasoppa.API.Hubs
             }
         }
 
+        /// <summary>
+        /// It starts a new round of the game.
+        /// </summary>
+        /// <param name="word">The word that the players will be explaining.</param>
         public async Task StartRound(string word)
         {
             word = word.Sanitize();
@@ -122,6 +130,7 @@ namespace Sanasoppa.API.Hubs
             _uow.RoundRepository.AddRound(newRound);
 
             game.CurrentRound = newRound;
+            game.GameState = 3;
             _uow.GameRepository.Update(game);
 
             if (await _uow.Complete())
@@ -155,6 +164,7 @@ namespace Sanasoppa.API.Hubs
         {
             var (game, _) = await GetGameAndPlayer(Context.ConnectionId);
             game.CurrentRound = null;
+            game.GameState = 2;
             _uow.GameRepository.Update(game);
             var currentDasher = _uow.GameRepository.GetDasherAsync(game);
             var nextDasher = ChangeDasher(game, currentDasher!);

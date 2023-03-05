@@ -317,8 +317,8 @@ namespace Sanasoppa.API.Data.Repositories
             {
                 throw new InvalidOperationException($"The Game {{game}} does not exists");
             }
-            game.HasStarted = true;
-            Update(game);
+
+            StartGame(game);
         }
 
         public async Task StartGameAsync(int id)
@@ -328,8 +328,8 @@ namespace Sanasoppa.API.Data.Repositories
             {
                 throw new InvalidOperationException($"The Game {{game}} does not exists");
             }
-            game.HasStarted = true;
-            Update(game);
+
+            StartGame(game);
         }
 
         public void StartGameAsync(Game game)
@@ -341,6 +341,19 @@ namespace Sanasoppa.API.Data.Repositories
         public void Update(Game game)
         {
             _context.Entry(game).State = EntityState.Modified;
+        }
+
+        
+        /// <summary>
+        /// This function sets the game's HasStarted property to true, sets the game's GameState
+        /// property to 1, and then calls the Update function
+        /// </summary>
+        /// <param name="Game">The game object that is being updated.</param>
+        private void StartGame(Game game)
+        {
+            game.HasStarted = true;
+            game.GameState = 1;
+            Update(game);
         }
     }
 }
