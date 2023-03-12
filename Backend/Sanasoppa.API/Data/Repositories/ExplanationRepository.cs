@@ -20,7 +20,13 @@ namespace Sanasoppa.API.Data.Repositories
                 .Include(e => e.Round)
                 .FirstOrDefaultAsync(e => e.Player.Id == playerId && e.Round.Id == roundId);
         }
-
+        public async Task<Explanation?> GetExplanationAsync(int explanationId)
+        {
+            return await _context.Explanations
+                .Include(e => e.Player)
+                .Include(e => e.Round)
+                .FirstOrDefaultAsync(e => e.Id == explanationId);
+        }
         public async Task RemoveExplanationAsync(int playerId, int roundId)
         {
             var explanation = await GetExplanationAsync(playerId, roundId);
@@ -41,13 +47,6 @@ namespace Sanasoppa.API.Data.Repositories
             _context.Entry(explanation).State = EntityState.Modified;
         }
 
-        public async Task<Explanation?> GetExplanationAsync(int explanationId)
-        {
-            return await _context.Explanations
-                .Include(e => e.Player)
-                .Include(e => e.Round)
-                .FirstOrDefaultAsync(e => e.Id == explanationId);
-        }
 
         public async Task<IEnumerable<Explanation>> GetRoundExplanationsWithVotesAsync(int roundId)
         {
