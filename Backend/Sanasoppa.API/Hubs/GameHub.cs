@@ -248,7 +248,7 @@ namespace Sanasoppa.API.Hubs
 
         public async Task ValuateExplanations(ICollection<int> RightPlayerIds, bool hasDuplicates)
         {
-            if (RightPlayerIds.Count() > 1) hasDuplicates = true;
+            if (RightPlayerIds.Count > 1) hasDuplicates = true;
             var (game, player) = await GetGameAndPlayer(Context.ConnectionId);
             if (game.CurrentRound!.DasherId != player.Id)
             {
@@ -309,7 +309,6 @@ namespace Sanasoppa.API.Hubs
             game.CurrentRound = null;
             game.GameState = GameState.WaitingDasher;
             _uow.GameRepository.Update(game);
-            var currentDasher = _uow.GameRepository.GetDasher(game);
             var nextDasher = GetNextDasher(game);
             if (await _uow.Complete())
             {
@@ -322,7 +321,6 @@ namespace Sanasoppa.API.Hubs
         private async Task CalculatePoints(Round round)
         {
             var explanations = await _uow.ExplanationRepository.GetRoundExplanationsWithVotesAsync(round.Id);
-            var explanationsCount = explanations.Count();
             var rightExplanation = explanations.FirstOrDefault(e => e.IsRight);
             var rightVotesCount = rightExplanation!.Votes.Count;
             if (rightVotesCount == 0)
@@ -348,7 +346,7 @@ namespace Sanasoppa.API.Hubs
             await _uow.Complete();
         }
 
-        private Player GetNextDasher(Game game)
+        private static Player GetNextDasher(Game game)
         {
             Player nextDasher;
             if (game.CurrentRound == null) 

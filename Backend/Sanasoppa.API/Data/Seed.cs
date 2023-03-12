@@ -4,7 +4,7 @@ using Sanasoppa.API.Entities;
 
 namespace Sanasoppa.API.Data
 {
-    public class Seed
+    public static class Seed
     {
         public static async Task SeedDefaultUser(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager, bool isDevelopment)
         {

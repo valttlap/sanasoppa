@@ -34,7 +34,7 @@ namespace Sanasoppa.API.Helpers
                 .ConstructUsing(src => src.Players.Select(p => new PlayerDto
                 {
                     Name = p.Username,
-                    IsHost = src.HostId == p.Id ? true : false
+                    IsHost = src.HostId == p.Id
                 }).ToList());
 
         }

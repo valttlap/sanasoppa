@@ -54,7 +54,7 @@ namespace Sanasoppa.API.Hubs
             }
             else
             {
-                throw new ApplicationException("Something went wrong while creating a game");
+                throw new HubException("Something went wrong while creating a game");
             }
         }
 
