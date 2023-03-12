@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Sanasoppa.API.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -161,19 +161,19 @@ namespace Sanasoppa.API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Explanation",
+                name: "Explanations",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Text = table.Column<string>(type: "text", nullable: false),
-                    IsRight = table.Column<bool>(type: "boolean", nullable: false),
                     RoundId = table.Column<int>(type: "integer", nullable: false),
-                    PlayerId = table.Column<int>(type: "integer", nullable: false)
+                    PlayerId = table.Column<int>(type: "integer", nullable: false),
+                    Text = table.Column<string>(type: "text", nullable: false),
+                    IsRight = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Explanation", x => x.Id);
+                    table.PrimaryKey("PK_Explanations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -184,7 +184,9 @@ namespace Sanasoppa.API.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     HasStarted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    CurrentRoundId = table.Column<int>(type: "integer", nullable: true)
+                    CurrentRoundId = table.Column<int>(type: "integer", nullable: true),
+                    GameState = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
+                    HostId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -199,7 +201,8 @@ namespace Sanasoppa.API.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ConnectionId = table.Column<string>(type: "text", nullable: false),
                     Username = table.Column<string>(type: "text", nullable: false),
-                    IsDasher = table.Column<bool>(type: "boolean", nullable: true),
+                    IsOnline = table.Column<bool>(type: "boolean", nullable: false),
+                    TotalPoints = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     GameId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
@@ -209,7 +212,8 @@ namespace Sanasoppa.API.Migrations
                         name: "FK_Players_Games_GameId",
                         column: x => x.GameId,
                         principalTable: "Games",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -218,8 +222,9 @@ namespace Sanasoppa.API.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    GameId = table.Column<int>(type: "integer", nullable: false),
-                    Word = table.Column<string>(type: "text", nullable: false)
+                    DasherId = table.Column<int>(type: "integer", nullable: false),
+                    Word = table.Column<string>(type: "text", nullable: false),
+                    GameId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -228,6 +233,45 @@ namespace Sanasoppa.API.Migrations
                         name: "FK_Rounds_Games_GameId",
                         column: x => x.GameId,
                         principalTable: "Games",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Rounds_Players_DasherId",
+                        column: x => x.DasherId,
+                        principalTable: "Players",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Votes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoundId = table.Column<int>(type: "integer", nullable: false),
+                    PlayerId = table.Column<int>(type: "integer", nullable: false),
+                    ExplanationId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Votes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Votes_Explanations_ExplanationId",
+                        column: x => x.ExplanationId,
+                        principalTable: "Explanations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Votes_Players_PlayerId",
+                        column: x => x.PlayerId,
+                        principalTable: "Players",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Votes_Rounds_RoundId",
+                        column: x => x.RoundId,
+                        principalTable: "Rounds",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -270,20 +314,24 @@ namespace Sanasoppa.API.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Explanation_PlayerId",
-                table: "Explanation",
+                name: "IX_Explanations_PlayerId",
+                table: "Explanations",
                 column: "PlayerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Explanation_RoundId",
-                table: "Explanation",
+                name: "IX_Explanations_RoundId",
+                table: "Explanations",
                 column: "RoundId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Games_CurrentRoundId",
                 table: "Games",
-                column: "CurrentRoundId",
-                unique: true);
+                column: "CurrentRoundId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Games_HostId",
+                table: "Games",
+                column: "HostId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Games_Name",
@@ -303,25 +351,53 @@ namespace Sanasoppa.API.Migrations
                 column: "GameId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Rounds_DasherId",
+                table: "Rounds",
+                column: "DasherId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Rounds_GameId",
                 table: "Rounds",
                 column: "GameId");
 
+            migrationBuilder.CreateIndex(
+                name: "IX_Votes_ExplanationId",
+                table: "Votes",
+                column: "ExplanationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Votes_PlayerId",
+                table: "Votes",
+                column: "PlayerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Votes_RoundId",
+                table: "Votes",
+                column: "RoundId");
+
             migrationBuilder.AddForeignKey(
-                name: "FK_Explanation_Players_PlayerId",
-                table: "Explanation",
+                name: "FK_Explanations_Players_PlayerId",
+                table: "Explanations",
                 column: "PlayerId",
                 principalTable: "Players",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Explanation_Rounds_RoundId",
-                table: "Explanation",
+                name: "FK_Explanations_Rounds_RoundId",
+                table: "Explanations",
                 column: "RoundId",
                 principalTable: "Rounds",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Games_Players_HostId",
+                table: "Games",
+                column: "HostId",
+                principalTable: "Players",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetNull);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Games_Rounds_CurrentRoundId",
@@ -329,12 +405,20 @@ namespace Sanasoppa.API.Migrations
                 column: "CurrentRoundId",
                 principalTable: "Rounds",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
+                onDelete: ReferentialAction.Restrict);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Games_Players_HostId",
+                table: "Games");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Rounds_Players_DasherId",
+                table: "Rounds");
+
             migrationBuilder.DropForeignKey(
                 name: "FK_Games_Rounds_CurrentRoundId",
                 table: "Games");
@@ -355,13 +439,16 @@ namespace Sanasoppa.API.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Explanation");
+                name: "Votes");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Explanations");
 
             migrationBuilder.DropTable(
                 name: "Players");

@@ -1,0 +1,7 @@
+<div *ngIf="!name">Peliä ei ole olemassa.</div>
+<ul>
+  <li *ngFor="let player of players">
+    {{ player.name }}
+    {{ player.isHost ? 'Host' : '' }}
+  </li>
+</ul>

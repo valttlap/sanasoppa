@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Sanasoppa.API.DTOs;
 using Sanasoppa.API.Entities;
+using Sanasoppa.API.Helpers;
 using Sanasoppa.API.Interfaces;
 
 namespace Sanasoppa.API.Data.Repositories
@@ -18,77 +19,142 @@ namespace Sanasoppa.API.Data.Repositories
             _mapper = mapper;
         }
 
-        public async Task<Game?> GetGameByNameAsync(string name)
-        {
-            return await _context.Games
-                .SingleOrDefaultAsync(x => x.Name == name);
-        }
-
-        public async Task<Game?> GetGameByIdAsync(int id)
-        {
-            return await _context.Games.FindAsync(id);
-        }
-
-        public async Task<IEnumerable<Game>> GetGamesAsync()
-        {
-            return await _context.Games
-                .ToListAsync();
-        }
-
-        public void Update(Game game)
-        {
-            _context.Entry(game).State = EntityState.Modified;
-        }
-
-        public async Task<IEnumerable<Player>> GetPlayersAsync(int gameId)
-        {
-            var game = await _context.Games.FindAsync(gameId);
-            if (game == null) throw new ArgumentException("Game not found", nameof(gameId));
-            return game.Players.ToList();
-        }
-
         public void AddGame(Game game)
         {
             _context.Games.Add(game);
         }
 
-        public async Task<Player> GetDasherAsync(int gameId)
+        public void AddPlayerToGame(Game game, Player player)
         {
-            var game = await _context.Games.FindAsync(gameId);
+            if (game.Players.Any(p => p.Id == player.Id)) return;
 
-            if (game == null)
-            {
-                throw new ArgumentException("Game not found", nameof(gameId));
-            }
-            
-            var dasher = game.Players.SingleOrDefault(p => p.IsDasher ?? false);
-            
-            if (dasher == null)
-            {
-                throw new Exception("No dasher found for game");
-            }
-
-            return dasher;
+            game.Players.Add(player);
+            Update(game);
         }
 
-        public Player GetDasherAsync(Game game)
+        public async Task AddPlayerToGameAsync(Game game, string playerName)
         {
-            var dasher = game.Players.SingleOrDefault(p => p.IsDasher ?? false);
+            if (game.Players.Any(p => p.Username == playerName)) return;
 
-            if (dasher == null)
+            var playerToAdd = await _context.Players.Where(p => p.Username == playerName).SingleOrDefaultAsync();
+            if (playerToAdd == null)
             {
-                throw new Exception("No dasher found for game");
+                throw new InvalidOperationException($"Player {playerName} doesn't exists");
             }
-
-            return dasher;
+            game.Players.Add(playerToAdd);
+            Update(game);
         }
 
-        public async Task<IEnumerable<GameDto>> GetNotStartedGamesAsync()
+        public async Task<bool> GameExistsAsync(int id)
+        {
+            return await _context.Games.FindAsync(id) != null;
+        }
+
+        public async Task<bool> GameExistsAsync(string gameName)
+        {
+            return await _context.Games.AnyAsync(g => g.Name == gameName);
+        }
+
+        public async Task<Player?> GetDasher(Game game)
+        {
+            var round = await _context.Rounds
+                .Include(r => r.Dasher)
+                .Where(r => r.Id == game.CurrentRoundId)
+                .FirstOrDefaultAsync();
+            return round?.Dasher;
+        }
+
+        public async Task<Game?> GetGameAsync(int id)
+        {
+            return await _context.Games.FindAsync(id);
+        }
+
+        public async Task<Game?> GetGameAsync(string gameName)
+        {
+            return await _context.Games.Where(g => g.Name == gameName).SingleOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<Game?>> GetGamesAsync()
+        {
+            return await _context.Games.ToListAsync();
+        }
+
+        public async Task<Game?> GetGameWithPlayersAsync(int id)
         {
             return await _context.Games
+                .Include(g => g.Players)
+                .Include(g => g.Host)
+                .Where(g => g.Id == id)
+                .SingleOrDefaultAsync();
+        }
+
+        public async Task<Game?> GetGameWithPlayersAsync(string gameName)
+        {
+            return await _context.Games
+                .Include(g => g.Players)
+                .Where(g => g.Name == gameName)
+                .SingleOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<GameDto?>> GetNotStartedGamesAsync()
+        {
+            return await _context.Games
+                .Include(g => g.Players)
                 .Where(g => !g.HasStarted)
                 .ProjectTo<GameDto>(_mapper.ConfigurationProvider)
                 .ToListAsync();
+        }
+
+        public async Task<Game?> GetWholeGameAsync(int id)
+        {
+            return await _context.Games
+                .Include(g => g.Players)
+                .Include(g => g.Host)
+                .Include(g => g.CurrentRound)
+                .Where(g => g.Id == id)
+                .SingleOrDefaultAsync();
+        }
+
+        public async Task<Game?> GetWholeGameAsync(string gameName)
+        {
+            return await _context.Games
+                .Include(g => g.Players)
+                .Include(g => g.CurrentRound)
+                .Where(g => g.Name == gameName)
+                .SingleOrDefaultAsync();
+        }
+
+        public bool HasGameEndedAsync(Game game)
+        {
+            return game.Players.Any(p => p.TotalPoints >= 20);
+        }
+
+        public void RemoveGame(Game game)
+        {
+            _context.Games.Remove(game);
+        }
+
+        public void RemovePlayerFromGame(Game game, string playerName)
+        {
+            var playerToRemove = game.Players.FirstOrDefault(p => p.Username == playerName);
+            if (playerToRemove == null)
+            {
+                throw new InvalidOperationException($"Player {playerName} is not in the game");
+            }
+            game.Players.Remove(playerToRemove);
+            Update(game);
+        }
+
+        public void StartGame(Game game)
+        {
+            game.HasStarted = true;
+            game.GameState = GameState.WaitingDasher;
+            Update(game);
+        }
+
+        public void Update(Game game)
+        {
+            _context.Entry(game).State = EntityState.Modified;
         }
     }
 }

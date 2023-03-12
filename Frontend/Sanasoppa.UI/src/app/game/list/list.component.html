@@ -1,0 +1,42 @@
+<ng-template #create let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Luo peli</h4>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Close"
+      (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <form #createForm="ngForm">
+      <div class="mb-3">
+        <label for="nameOfGame">Pelin nimi</label>
+        <div class="input-group">
+          <input
+            id="nameOfGame"
+            class="form-control"
+            type="text"
+            [(ngModel)]="gameName"
+            name="gameName"
+            required />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button
+      class="btn btn-outline-dark"
+      (click)="modal.close(gameName)"
+      [disabled]="createForm.invalid">
+      Luo peli
+    </button>
+  </div>
+</ng-template>
+
+<button class="btn btn-primary" (click)="open(create)">Luo peli</button>
+<ul>
+  <li *ngFor="let game of games">
+    {{ game.name }}
+    <button class="btn btn-primary" (click)="joinGame(game.name)">Liity</button>
+  </li>
+</ul>

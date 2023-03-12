@@ -43,5 +43,13 @@ namespace Sanasoppa.API.Data.Repositories
         {
             _context.Entry(round).State = EntityState.Modified;
         }
+
+        public async Task<Round?> GetRoundWithExplanationsAsync(int roundId)
+        {
+            return await _context.Rounds
+                .Include(r => r.Explanations)
+                .FirstOrDefaultAsync(r => r.Id == roundId);
+        }
+
     }
 }

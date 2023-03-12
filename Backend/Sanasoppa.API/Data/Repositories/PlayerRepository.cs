@@ -63,6 +63,22 @@ namespace Sanasoppa.API.Data.Repositories
                 .ToListAsync();
         }
 
+        public void GivePoints(Player player, int points)
+        {
+            player.TotalPoints += points;
+            Update(player);
+        }
+
+        public async Task GivePointsAsync(int playerId, int points)
+        {
+            var player = await GetPlayerAsync(playerId);
+            if (player == null)
+            {
+                throw new ArgumentException("The player does not exist.", nameof(playerId));
+            }
+            GivePoints(player, points);
+        }
+
         public void Update(Player player)
         {
             _context.Entry(player).State = EntityState.Modified;
