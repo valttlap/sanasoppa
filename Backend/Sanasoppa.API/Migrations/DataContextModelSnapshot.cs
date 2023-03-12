@@ -251,7 +251,7 @@ namespace Sanasoppa.API.Migrations
 
                     b.HasIndex("RoundId");
 
-                    b.ToTable("Explanation");
+                    b.ToTable("Explanations");
                 });
 
             modelBuilder.Entity("Sanasoppa.API.Entities.Game", b =>
@@ -265,10 +265,18 @@ namespace Sanasoppa.API.Migrations
                     b.Property<int?>("CurrentRoundId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("GameState")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
                     b.Property<bool>("HasStarted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
+
+                    b.Property<int>("HostId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -276,8 +284,9 @@ namespace Sanasoppa.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CurrentRoundId")
-                        .IsUnique();
+                    b.HasIndex("CurrentRoundId");
+
+                    b.HasIndex("HostId");
 
                     b.HasIndex("Name")
                         .IsUnique();
@@ -294,13 +303,19 @@ namespace Sanasoppa.API.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ConnectionId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int?>("GameId")
                         .HasColumnType("integer");
 
-                    b.Property<bool?>("IsDasher")
+                    b.Property<bool>("IsOnline")
                         .HasColumnType("boolean");
+
+                    b.Property<int>("TotalPoints")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -324,6 +339,9 @@ namespace Sanasoppa.API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("DasherId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("GameId")
                         .HasColumnType("integer");
 
@@ -333,9 +351,39 @@ namespace Sanasoppa.API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DasherId");
+
                     b.HasIndex("GameId");
 
                     b.ToTable("Rounds");
+                });
+
+            modelBuilder.Entity("Sanasoppa.API.Entities.Vote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ExplanationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RoundId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExplanationId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("RoundId");
+
+                    b.ToTable("Votes");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -396,7 +444,7 @@ namespace Sanasoppa.API.Migrations
             modelBuilder.Entity("Sanasoppa.API.Entities.Explanation", b =>
                 {
                     b.HasOne("Sanasoppa.API.Entities.Player", "Player")
-                        .WithMany("Explanations")
+                        .WithMany()
                         .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -415,31 +463,75 @@ namespace Sanasoppa.API.Migrations
             modelBuilder.Entity("Sanasoppa.API.Entities.Game", b =>
                 {
                     b.HasOne("Sanasoppa.API.Entities.Round", "CurrentRound")
-                        .WithOne()
-                        .HasForeignKey("Sanasoppa.API.Entities.Game", "CurrentRoundId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .WithMany()
+                        .HasForeignKey("CurrentRoundId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Sanasoppa.API.Entities.Player", "Host")
+                        .WithMany()
+                        .HasForeignKey("HostId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
 
                     b.Navigation("CurrentRound");
+
+                    b.Navigation("Host");
                 });
 
             modelBuilder.Entity("Sanasoppa.API.Entities.Player", b =>
                 {
                     b.HasOne("Sanasoppa.API.Entities.Game", "Game")
                         .WithMany("Players")
-                        .HasForeignKey("GameId");
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Game");
                 });
 
             modelBuilder.Entity("Sanasoppa.API.Entities.Round", b =>
                 {
+                    b.HasOne("Sanasoppa.API.Entities.Player", "Dasher")
+                        .WithMany()
+                        .HasForeignKey("DasherId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Sanasoppa.API.Entities.Game", "Game")
                         .WithMany("Rounds")
                         .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Dasher");
+
                     b.Navigation("Game");
+                });
+
+            modelBuilder.Entity("Sanasoppa.API.Entities.Vote", b =>
+                {
+                    b.HasOne("Sanasoppa.API.Entities.Explanation", "Explanation")
+                        .WithMany("Votes")
+                        .HasForeignKey("ExplanationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Sanasoppa.API.Entities.Player", "Player")
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Sanasoppa.API.Entities.Round", "Round")
+                        .WithMany("Votes")
+                        .HasForeignKey("RoundId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Explanation");
+
+                    b.Navigation("Player");
+
+                    b.Navigation("Round");
                 });
 
             modelBuilder.Entity("Sanasoppa.API.Entities.AppRole", b =>
@@ -452,6 +544,11 @@ namespace Sanasoppa.API.Migrations
                     b.Navigation("UserRoles");
                 });
 
+            modelBuilder.Entity("Sanasoppa.API.Entities.Explanation", b =>
+                {
+                    b.Navigation("Votes");
+                });
+
             modelBuilder.Entity("Sanasoppa.API.Entities.Game", b =>
                 {
                     b.Navigation("Players");
@@ -459,14 +556,11 @@ namespace Sanasoppa.API.Migrations
                     b.Navigation("Rounds");
                 });
 
-            modelBuilder.Entity("Sanasoppa.API.Entities.Player", b =>
-                {
-                    b.Navigation("Explanations");
-                });
-
             modelBuilder.Entity("Sanasoppa.API.Entities.Round", b =>
                 {
                     b.Navigation("Explanations");
+
+                    b.Navigation("Votes");
                 });
 #pragma warning restore 612, 618
         }

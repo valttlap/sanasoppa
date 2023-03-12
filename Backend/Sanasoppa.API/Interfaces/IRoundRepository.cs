@@ -16,6 +16,7 @@ namespace Sanasoppa.API.Interfaces
         /// <param name="Round">The round that the explanation is for.</param>
         /// <param name="Explanation">The explanation object that you want to add to the round.</param>
         void AddExplanation(Round round, Explanation explanation);
+        Task<Round?> GetRoundWithExplanationsAsync(int roundId);
         /// <summary>
         /// > Adds a round to the game
         /// </summary>

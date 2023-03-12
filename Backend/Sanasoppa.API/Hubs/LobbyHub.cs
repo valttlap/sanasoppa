@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using Sanasoppa.API.Entities;
 using Sanasoppa.API.EventArgs;
 using Sanasoppa.API.Extensions;
+using Sanasoppa.API.Helpers;
 using Sanasoppa.API.Interfaces;
 
 namespace Sanasoppa.API.Hubs
@@ -30,7 +31,7 @@ namespace Sanasoppa.API.Hubs
             {
                 Name = gameName,
                 HasStarted = false,
-                GameState = 0,
+                GameState = GameState.NotStarted,
             };
 
             var player = await _uow.PlayerRepository.GetPlayerByUsernameAsync(Context.User!.GetUsername()!);
@@ -39,11 +40,13 @@ namespace Sanasoppa.API.Hubs
                 player = new Player
                 {
                     ConnectionId = Context.ConnectionId,
-                    IsDasher = true,
                     Username = Context.User!.GetUsername()!
                 };
+                _uow.PlayerRepository.AddPlayer(player);
+                await _uow.Complete();
             }
             game.Players.Add(player);
+            game.HostId = player.Id;
             _uow.GameRepository.AddGame(game);
             if (await _uow.Complete())
             {

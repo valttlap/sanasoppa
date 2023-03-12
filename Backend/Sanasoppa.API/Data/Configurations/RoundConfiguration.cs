@@ -13,14 +13,19 @@ namespace Sanasoppa.API.Data.Configurations
 
             builder.Property(e => e.Word).IsRequired();
 
-            builder.HasMany(e => e.Explanations)
+            builder.HasOne(r => r.Dasher)
+                .WithMany()
+                .HasForeignKey(r => r.DasherId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+            
+            builder.HasMany(r => r.Explanations)
                 .WithOne(e => e.Round)
                 .HasForeignKey(e => e.RoundId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasMany(e => e.Scores)
-                .WithOne(e => e.Round)
-                .HasForeignKey(e => e.RoundId)
+            builder.HasMany(r => r.Votes)
+                .WithOne(v => v.Round)
+                .HasForeignKey(v => v.RoundId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

@@ -5,13 +5,15 @@ namespace Sanasoppa.API.Entities
         public Round() 
         { 
             Explanations = new List<Explanation>();
-            Scores = new List<Score>();
+            Votes = new List<Vote>();
         }
         public int Id { get; set; }
+        public int DasherId { get; set; }
+        public string Word { get; set; } = default!;
         public int GameId { get; set; }
         public Game Game { get; set; } = default!;
-        public string Word { get; set; } = default!;
-        public List<Explanation> Explanations { get; set; }
-        public List<Score> Scores { get; set; }
+        public Player Dasher { get; set; } = default!;
+        public ICollection<Explanation> Explanations { get; set; }
+        public ICollection<Vote> Votes { get; set; }
     }
 }

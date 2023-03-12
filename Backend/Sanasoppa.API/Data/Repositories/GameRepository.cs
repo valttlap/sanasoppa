@@ -3,8 +3,8 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Sanasoppa.API.DTOs;
 using Sanasoppa.API.Entities;
+using Sanasoppa.API.Helpers;
 using Sanasoppa.API.Interfaces;
-using System.Numerics;
 
 namespace Sanasoppa.API.Data.Repositories
 {
@@ -55,9 +55,13 @@ namespace Sanasoppa.API.Data.Repositories
             return await _context.Games.AnyAsync(g => g.Name == gameName);
         }
 
-        public Player? GetDasher(Game game)
+        public async Task<Player?> GetDasher(Game game)
         {
-            return game.Players.SingleOrDefault(p => p.IsDasher == true);
+            var round = await _context.Rounds
+                .Include(r => r.Dasher)
+                .Where(r => r.Id == game.CurrentRoundId)
+                .FirstOrDefaultAsync();
+            return round?.Dasher;
         }
 
         public async Task<Game?> GetGameAsync(int id)
@@ -79,6 +83,7 @@ namespace Sanasoppa.API.Data.Repositories
         {
             return await _context.Games
                 .Include(g => g.Players)
+                .Include(g => g.Host)
                 .Where(g => g.Id == id)
                 .SingleOrDefaultAsync();
         }
@@ -104,6 +109,7 @@ namespace Sanasoppa.API.Data.Repositories
         {
             return await _context.Games
                 .Include(g => g.Players)
+                .Include(g => g.Host)
                 .Include(g => g.CurrentRound)
                 .Where(g => g.Id == id)
                 .SingleOrDefaultAsync();
@@ -116,6 +122,11 @@ namespace Sanasoppa.API.Data.Repositories
                 .Include(g => g.CurrentRound)
                 .Where(g => g.Name == gameName)
                 .SingleOrDefaultAsync();
+        }
+
+        public bool HasGameEndedAsync(Game game)
+        {
+            return game.Players.Any(p => p.TotalPoints >= 20);
         }
 
         public void RemoveGame(Game game)
@@ -137,7 +148,7 @@ namespace Sanasoppa.API.Data.Repositories
         public void StartGame(Game game)
         {
             game.HasStarted = true;
-            game.GameState = 1;
+            game.GameState = GameState.WaitingDasher;
             Update(game);
         }
 

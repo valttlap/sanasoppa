@@ -16,15 +16,27 @@ namespace Sanasoppa.API.Helpers
             CreateMap<Player, PlayerDto>()
                 .ForMember(dest => dest.Name,
                     opt => opt.MapFrom(src => src.Username))
-                .ForMember(dest => dest.IsDasher,
-                    opt => opt.MapFrom(src => src.IsDasher));
-            CreateMap<Score, ScoreDto>()
+                .ForMember(dest => dest.IsHost,
+                    opt => opt.Ignore());
+            CreateMap<Explanation, ExplanationDto>()
+                .ForMember(dest => dest.PlayerId,
+                    opt => opt.MapFrom(src => src.Player.Id))
                 .ForMember(dest => dest.PlayerName,
                     opt => opt.MapFrom(src => src.Player.Username))
-                .ForMember(dest => dest.TotalPoints, opt => opt.Ignore())
-                .AfterMap((src, dest) => {
-                    dest.TotalPoints = src.Player.Scores.Where(s => s.Round.GameId == src.Round.GameId).Sum(s => s.Points);
-                });
+                .ForMember(dest => dest.Explanation,
+                    opt => opt.MapFrom(src => src.Round.Word));
+            CreateMap<Explanation, VoteExplanationDto>()
+                .ForMember(dest => dest.Id,
+                    opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Explanation,
+                    opt => opt.MapFrom(src => src.Round.Word));
+            CreateMap<Game, ICollection<PlayerDto>>()
+                .ConstructUsing(src => src.Players.Select(p => new PlayerDto
+                {
+                    Name = p.Username,
+                    IsHost = src.HostId == p.Id ? true : false
+                }).ToList());
+
         }
     }
 }

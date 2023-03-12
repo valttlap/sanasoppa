@@ -54,7 +54,7 @@ namespace Sanasoppa.API.Interfaces
         /// </summary>
         /// <param name="game">The game object to retrieve the dasher for.</param>
         /// <returns>Returns the dasher in the specified game, or null if the game does not exist or has no dasher.</returns>
-        Player? GetDasher(Game game);
+        Task<Player?> GetDasher(Game game);
 
 
         /// <summary>
@@ -89,6 +89,7 @@ namespace Sanasoppa.API.Interfaces
         /// <param name="game">The game to add the player to.</param>
         /// <param name="playerName">The name of the player to add.</param>
         Task AddPlayerToGameAsync(Game game, string playerName);
+        bool HasGameEndedAsync(Game game);
 
         /// <summary>
         /// Add a player to a game.

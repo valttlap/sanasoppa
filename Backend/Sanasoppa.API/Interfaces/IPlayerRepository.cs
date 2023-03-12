@@ -43,6 +43,8 @@ namespace Sanasoppa.API.Interfaces
         /// > Adds a player to the game
         /// </summary>
         /// <param name="Player">The player object that you want to add to the game.</param>
+        Task GivePointsAsync(int playerId, int points);
+        void GivePoints(Player player, int points);
         void AddPlayer(Player player);
         /// <summary>
         /// > This function is called every frame and is used to update the player's position and other

@@ -47,7 +47,7 @@ if (builder.Environment.IsDevelopment())
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials()
-        .WithOrigins("http://localhost:4200"));
+        .WithOrigins("https://localhost:4200"));
 }
 
 app.UseAuthentication();
@@ -56,6 +56,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<GameHub>("hubs/gamehub");
+app.MapHub<LobbyHub>("hubs/lobbyhub");
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 try
@@ -63,9 +64,9 @@ try
     var context = services.GetRequiredService<DataContext>();
     var userManager = services.GetRequiredService<UserManager<AppUser>>();
     var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
+    var environment = services.GetRequiredService<IWebHostEnvironment>();
     await context.Database.MigrateAsync();
-    await context.SeedDataAsync();
-    await Seed.SeedDefaultUser(userManager, roleManager);
+    await Seed.SeedDefaultUser(userManager, roleManager, environment.IsDevelopment());
 }
 catch (Exception ex)
 {

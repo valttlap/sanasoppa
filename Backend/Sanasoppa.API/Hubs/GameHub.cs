@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Sanasoppa.API.DTOs;
 using Sanasoppa.API.Entities;
 using Sanasoppa.API.Extensions;
+using Sanasoppa.API.Helpers;
 using Sanasoppa.API.Interfaces;
 
 namespace Sanasoppa.API.Hubs
@@ -33,6 +34,7 @@ namespace Sanasoppa.API.Hubs
                     Username = username,
                 };
                 _uow.PlayerRepository.AddPlayer(player);
+                await _uow.Complete();
             }
             else if (player.ConnectionId != Context.ConnectionId)
             {
@@ -43,50 +45,79 @@ namespace Sanasoppa.API.Hubs
             player.IsOnline = true;
             _uow.PlayerRepository.Update(player);
 
-            var httpContext = Context.GetHttpContext();
-            var gameName = httpContext?.Request.Query["game"].ToString();
+            var gameName = Context
+                .GetHttpContext()?
+                .Request
+                .Query["game"]
+                .ToString()?
+                .Sanitize();
 
             if (string.IsNullOrWhiteSpace(gameName))
             {
                 throw new HubException("Name of the game was not given");
             }
 
-            gameName = gameName.Sanitize();
-
             var game = await _uow.GameRepository.GetGameWithPlayersAsync(gameName);
             if (game == null)
             {
                 throw new HubException("Game doesn't exist");
             }
+
             _uow.GameRepository.AddPlayerToGame(game, player);
-            
             await Groups.AddToGroupAsync(player.ConnectionId, gameName!);
 
             if (_uow.HasChanges()) await _uow.Complete();
 
-            var players = _mapper.Map<ICollection<PlayerDto>>(game.Players);
+            var players = _mapper.Map<ICollection<PlayerDto>>(game);
             await Clients.Group(gameName).SendAsync("PlayerJoined", players);
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var player = await _uow.PlayerRepository.GetPlayerByConnIdAsync(Context.ConnectionId);
-            if (player == null) return;
+
+            if (player == null)
+            {
+                return;
+            }
+
             player.IsOnline = false;
+            _uow.PlayerRepository.Update(player);
+
             if (player.GameId == null)
             {
                 await _uow.Complete();
                 return;
             }
+
             var game = await _uow.GameRepository.GetGameWithPlayersAsync(player.GameId.Value);
-            if (game == null) return;
-            if (game.Players.Where(p => p != player).Any(p => p.IsOnline)) return;
-            _uow.GameRepository.RemoveGame(game);
-            if(_uow.HasChanges())
+
+            if (game == null)
+            {
+                return;
+            }
+
+            var otherOnlinePlayers = game.Players.Where(p => p != player && p.IsOnline).ToList();
+
+            if (otherOnlinePlayers.Any())
+            {
+                if (game.HostId == player.Id)
+                {
+                    game.HostId = otherOnlinePlayers.First().Id;
+                    _uow.GameRepository.Update(game);
+                }
+            }
+            else
+            {
+                _uow.GameRepository.RemoveGame(game);
+            }
+
+            if (_uow.HasChanges())
             {
                 await _uow.Complete();
             }
         }
+
 
 
         public async Task<IEnumerable<PlayerDto?>> GetPlayers(string gameName)
@@ -97,7 +128,7 @@ namespace Sanasoppa.API.Hubs
             {
                 throw new ArgumentException("Invalid game name", nameof(gameName));
             }
-            return _mapper.Map<IEnumerable<PlayerDto>>(game.Players);
+            return _mapper.Map<ICollection<PlayerDto>>(game);
 
         }
 
@@ -118,7 +149,7 @@ namespace Sanasoppa.API.Hubs
 
             if (await _uow.Complete())
             {
-                var dasher = _uow.GameRepository.GetDasher(game);
+                var dasher = await _uow.PlayerRepository.GetPlayerAsync(game.HostId);
                 var gameStartedTask = Clients.GroupExcept(gameName, dasher!.ConnectionId).SendAsync("WaitDasher", dasher.Username);
                 var startRoundTask = Clients.Client(dasher.ConnectionId).SendAsync("StartRound");
                 Task.WaitAll(gameStartedTask, startRoundTask);
@@ -132,23 +163,48 @@ namespace Sanasoppa.API.Hubs
         public async Task StartRound(string word)
         {
             word = word.Sanitize();
+
             var (game, player) = await GetGameAndPlayer(Context.ConnectionId);
 
-            if (!player.IsDasher ?? false)
+            if (game.CurrentRoundId == null)
             {
-                throw new ArgumentException("Only dasher can start the round");
+                if (game.HostId != player.Id)
+                {
+                    throw new ArgumentException("Only host can start the first round");
+                }
+
+                game.CurrentRound = new Round
+                {
+                    Game = game,
+                    GameId = game.Id,
+                    Word = word,
+                    Dasher = player,
+                    DasherId = player.Id
+                };
+            }
+            else
+            {
+                if (game.CurrentRound!.DasherId != player.Id)
+                {
+                    throw new ArgumentException("Only dasher can start the round");
+                }
+
+                var players = game.Players.OrderBy(p => p.Id).ToList();
+                var dasherIndex = players.FindIndex(p => p.Id == game.CurrentRound.DasherId);
+                var nextDasherIndex = (dasherIndex + 1) % players.Count;
+                var nextDasher = players[nextDasherIndex];
+
+                game.CurrentRound = new Round
+                {
+                    Game = game,
+                    GameId = game.Id,
+                    Word = word,
+                    Dasher = nextDasher,
+                    DasherId = nextDasher.Id
+                };
             }
 
-            var newRound = new Round
-            {
-                Game = game,
-                GameId = game.Id,
-                Word = word,
-            };
-            _uow.RoundRepository.AddRound(newRound);
-
-            game.CurrentRound = newRound;
-            game.GameState = 3;
+            game.GameState = GameState.GivingExplanations;
             _uow.GameRepository.Update(game);
 
             if (await _uow.Complete())
@@ -157,6 +213,7 @@ namespace Sanasoppa.API.Hubs
             }
         }
 
+
         public async Task GiveExplanation(string explanation)
         {
             explanation = explanation.Sanitize();
@@ -164,7 +221,7 @@ namespace Sanasoppa.API.Hubs
             var newExplanation = new Explanation
             {
                 Text = explanation,
-                IsRight = player.IsDasher ?? false,
+                IsRight = game.CurrentRound!.DasherId == player.Id,
                 Round = game.CurrentRound!,
                 RoundId = game.CurrentRound!.Id,
                 Player = player,
@@ -175,17 +232,85 @@ namespace Sanasoppa.API.Hubs
             if (await _uow.Complete())
             {
                 await Clients.Group(game.Name).SendAsync("ExplanationGiven", player);
+                if (game.CurrentRound!.Explanations.Count == game.Players.Count)
+                {
+                    var dasher = await _uow.GameRepository.GetDasher(game);
+                    var round = await _uow.RoundRepository.GetRoundWithExplanationsAsync(game.CurrentRound.Id);
+                    var playersTask = Clients.GroupExcept(game.Name, dasher!.ConnectionId).SendAsync("AllExplanationsGiven");
+                    var dasherTask = Clients.Client(dasher!.ConnectionId).SendAsync("HandleExplanations", _mapper.Map<ICollection<ExplanationDto>>(round!.Explanations));
+                    game.GameState = GameState.DasherValuingExplanations;
+                    _uow.GameRepository.Update(game);
+                    var saveTask = _uow.Complete();
+                    Task.WaitAll(playersTask, dasherTask, saveTask);
+                }
             }
         }
+
+        public async Task ValuateExplanations(ICollection<int> RightPlayerIds, bool hasDuplicates)
+        {
+            if (RightPlayerIds.Count() > 1) hasDuplicates = true;
+            var (game, player) = await GetGameAndPlayer(Context.ConnectionId);
+            if (game.CurrentRound!.DasherId != player.Id)
+            {
+                throw new ArgumentException("Only dasher can valuate explanations");
+            }
+            foreach (var playerId in RightPlayerIds)
+            {
+                await _uow.PlayerRepository.GivePointsAsync(playerId, 2);
+                await _uow.ExplanationRepository.RemoveExplanationAsync(playerId, game.CurrentRound.Id);
+            }
+
+            if (hasDuplicates)
+            {
+                await EndRound();
+                return;
+            }
+            game.GameState = GameState.VotingExplanations;
+            _uow.GameRepository.Update(game);
+
+            var round = await _uow.RoundRepository.GetRoundWithExplanationsAsync(game.CurrentRound!.Id);
+
+            var dasherTask = Clients.Client(player.ConnectionId).SendAsync("WaitResults");
+            var playersTask = Clients.GroupExcept(game.Name, player.ConnectionId).SendAsync("VoteExplanations", _mapper.Map<ICollection<VoteExplanationDto>>(round!.Explanations));
+            var saveTask = _uow.Complete();
+            Task.WaitAll(dasherTask, playersTask, saveTask);
+        }
+
+        public async Task CastVote(int explanationId)
+        {
+            var (game, player) = await GetGameAndPlayer(Context.ConnectionId);
+            var explanation = await _uow.ExplanationRepository.GetExplanationAsync(explanationId);
+            if (explanation == null)
+            {
+                throw new ArgumentException("Invalid explanation id", nameof(explanationId));
+            }
+            var vote = new Vote
+            {
+                ExplanationId = explanation.Id,
+                PlayerId = player.Id,
+                RoundId = game.CurrentRound!.Id
+            };
+            _uow.VoteRepository.AddVote(vote);
+            if (await _uow.Complete())
+            {
+                await Clients.Group(game.Name).SendAsync("VoteCast", player.Username);
+                if (game.CurrentRound!.Votes.Count == game.CurrentRound!.Explanations.Count - 1)
+                {
+                    await EndRound();
+                }
+            }
+        }
+
 
         public async Task EndRound()
         {
             var (game, _) = await GetGameAndPlayer(Context.ConnectionId);
+            await CalculatePoints(game.CurrentRound!);
             game.CurrentRound = null;
-            game.GameState = 2;
+            game.GameState = GameState.WaitingDasher;
             _uow.GameRepository.Update(game);
             var currentDasher = _uow.GameRepository.GetDasher(game);
-            var nextDasher = ChangeDasher(game, currentDasher!);
+            var nextDasher = GetNextDasher(game);
             if (await _uow.Complete())
             {
                 var waitDasherTask = Clients.GroupExcept(game.Name, nextDasher.ConnectionId).SendAsync("WaitDasher", nextDasher.Username);
@@ -194,16 +319,49 @@ namespace Sanasoppa.API.Hubs
             }
         }
 
-        private Player ChangeDasher(Game game, Player previousDasher)
+        private async Task CalculatePoints(Round round)
         {
-            var players = game.Players.OrderBy(p => p.Id).ToList();
-            var index = players.FindIndex(p => p == previousDasher);
-            var nextDasher = players.Skip(index + 1)
-                .FirstOrDefault(p => !p.IsDasher ?? true) ?? players.FirstOrDefault(p => !p.IsDasher ?? true);
-            nextDasher!.IsDasher = true;
-            _uow.PlayerRepository.Update(nextDasher);
-            previousDasher.IsDasher = false;
-            _uow.PlayerRepository.Update(previousDasher);
+            var explanations = await _uow.ExplanationRepository.GetRoundExplanationsWithVotesAsync(round.Id);
+            var explanationsCount = explanations.Count();
+            var rightExplanation = explanations.FirstOrDefault(e => e.IsRight);
+            var rightVotesCount = rightExplanation!.Votes.Count;
+            if (rightVotesCount == 0)
+            {
+                await _uow.PlayerRepository.GivePointsAsync(round.DasherId, 2);
+                await _uow.Complete();
+                return;
+            }
+            else
+            {
+                foreach (var vote in rightExplanation.Votes)
+                {
+                    await _uow.PlayerRepository.GivePointsAsync(vote.PlayerId, 1);
+                }
+                foreach (var explanation in explanations.Where(e => !e.IsRight && e.Votes.Count > 0))
+                {
+                    foreach (var vote in explanation.Votes)
+                    {
+                        await _uow.PlayerRepository.GivePointsAsync(explanation.PlayerId, 1);
+                    }
+                }
+            }
+            await _uow.Complete();
+        }
+
+        private Player GetNextDasher(Game game)
+        {
+            Player nextDasher;
+            if (game.CurrentRound == null) 
+            {
+                nextDasher = game.Host;
+            }
+            else 
+            {
+                var players = game.Players.OrderBy(p => p.Id).ToList();
+                var dasherIndex = players.FindIndex(p => p.Id == game.CurrentRound.DasherId);
+                var nextDasherIndex = (dasherIndex + 1) % players.Count;
+                nextDasher = players[nextDasherIndex];
+            }
             return nextDasher;
         }
 

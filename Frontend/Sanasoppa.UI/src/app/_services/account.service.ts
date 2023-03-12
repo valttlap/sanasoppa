@@ -4,7 +4,7 @@ import { BehaviorSubject, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { User } from '../_models/user';
 import { ILogin } from '../_models/ILogin';
-import { Buffer } from 'buffer';
+import { JwtHelperService } from '@auth0/angular-jwt';
 
 @Injectable({
   providedIn: 'root',
@@ -42,7 +42,12 @@ export class AccountService {
     this.currentUserSource.next(null);
   }
 
-  getDecodedToken(token: string) {
+  /* getDecodedToken(token: string) {
     return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+  } */
+
+  getDecodedToken(token: string) {
+    const helper = new JwtHelperService();
+    return helper.decodeToken(token);
   }
 }

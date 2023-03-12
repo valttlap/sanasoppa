@@ -22,10 +22,10 @@ export class GameHubService {
 
   constructor(private busyService: BusyService, private http: HttpClient) {}
 
-  startConnection(user: User) {
+  startConnection(user: User, gameName: string) {
     this.busyService.busy();
     this.hubConnection = new HubConnectionBuilder()
-      .withUrl(this.hubUrl + 'gamehub', {
+      .withUrl(this.hubUrl + 'gamehub?game=' + gameName, {
         accessTokenFactory: () => user.token,
         transport: HttpTransportType.WebSockets,
       })

@@ -7,6 +7,8 @@ namespace Sanasoppa.API.Interfaces
         IGameRepository GameRepository { get; }
         IPlayerRepository PlayerRepository { get; }
         IRoundRepository RoundRepository { get; }
+        IExplanationRepository ExplanationRepository { get; }
+        IVoteRepository VoteRepository { get; }
 
         /// <summary>
         /// Saves all changes made in this context to the database.
