@@ -50,7 +50,7 @@ export class ListComponent implements OnInit, OnDestroy {
     );
     this.gameHubService.getNotStartedGames().subscribe({
       next: games => this.updateGames(games),
-      error: error => console.log(error),
+      error: error => console.error(error),
     });
   }
 
