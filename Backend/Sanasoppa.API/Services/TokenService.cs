@@ -6,43 +6,42 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Sanasoppa.API.Services
+namespace Sanasoppa.API.Services;
+
+public class TokenService : ITokenService
 {
-    public class TokenService : ITokenService
+    private readonly UserManager<AppUser> _userManager;
+    private readonly SymmetricSecurityKey _key;
+
+    public TokenService(IConfiguration config, UserManager<AppUser> userManager)
+    {   
+        _userManager = userManager;
+        _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"] ?? throw new Exception("Tokenkey not found")));
+    }
+
+    public async Task<string> CreateToken(AppUser user)
     {
-        private readonly UserManager<AppUser> _userManager;
-        private readonly SymmetricSecurityKey _key;
-
-        public TokenService(IConfiguration config, UserManager<AppUser> userManager)
-        {   
-            _userManager = userManager;
-            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"] ?? throw new Exception("Tokenkey not found")));
-        }
-
-        public async Task<string> CreateToken(AppUser user)
+        var claims = new List<Claim>
         {
-            var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.NameId, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName!),
-            };
+            new Claim(JwtRegisteredClaimNames.NameId, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName!),
+        };
 
-            var roles = await _userManager.GetRolesAsync(user);
+        var roles = await _userManager.GetRolesAsync(user);
 
-            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
-            var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);
+        var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);
 
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddDays(1),
-                SigningCredentials = creds
-            };
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = DateTime.Now.AddDays(1),
+            SigningCredentials = creds
+        };
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
-        }
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
     }
 }

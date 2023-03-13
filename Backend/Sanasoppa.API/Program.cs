@@ -66,7 +66,7 @@ try
     var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
     var environment = services.GetRequiredService<IWebHostEnvironment>();
     await context.Database.MigrateAsync();
-    await Seed.SeedDefaultUser(userManager, roleManager, environment.IsDevelopment());
+    await Seed.SeedDefaultUserAsync(userManager, roleManager, environment.IsDevelopment());
 }
 catch (Exception ex)
 {
