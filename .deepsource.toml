@@ -1,0 +1,18 @@
+version = 1
+
+exclude_patterns = ["Migrations/**"]
+
+[[analyzers]]
+name = "javascript"
+
+  [analyzers.meta]
+  plugins = ["angular"]
+
+[[analyzers]]
+name = "csharp"
+
+[[transformers]]
+name = "prettier"
+
+[[transformers]]
+name = "dotnet-format"
