@@ -1,3 +1,4 @@
+import { IToken } from './../_models/IToken';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, map } from 'rxjs';
@@ -17,7 +18,7 @@ export class AccountService {
   constructor(private http: HttpClient) {}
 
   login(model: ILogin) {
-    return this.http.post<User>(this.baseUrl + 'account/login', model).pipe(
+    return this.http.post<User>(`${this.baseUrl}/account/login`, model).pipe(
       map((response: User) => {
         const user = response;
         if (user) {
@@ -29,10 +30,14 @@ export class AccountService {
 
   setCurrentUser(user: User) {
     user.roles = [];
-    const roles = this.getDecodedToken(user.token).role;
+    const roles = AccountService.getDecodedToken(user.token)?.role;
     if (Array.isArray(roles)) {
       user.roles = roles;
-    } else user.roles.push(roles);
+    } else if (typeof roles === 'string') {
+      user.roles.push(roles);
+    } else {
+      user.roles = [];
+    }
     localStorage.setItem('user', JSON.stringify(user));
     this.currentUserSource.next(user);
   }
@@ -46,8 +51,8 @@ export class AccountService {
     return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
   } */
 
-  getDecodedToken(token: string) {
+  static getDecodedToken(token: string): IToken | null {
     const helper = new JwtHelperService();
-    return helper.decodeToken(token);
+    return helper.decodeToken<IToken>(token);
   }
 }

@@ -25,7 +25,7 @@ export class GameHubService {
   startConnection(user: User, gameName: string) {
     this.busyService.busy();
     this.hubConnection = new HubConnectionBuilder()
-      .withUrl(this.hubUrl + 'gamehub?game=' + gameName, {
+      .withUrl(`${this.hubUrl}/gamehub?game=${gameName}`, {
         accessTokenFactory: () => user.token,
         transport: HttpTransportType.WebSockets,
       })
@@ -46,14 +46,14 @@ export class GameHubService {
   }
 
   getNotStartedGames(): Observable<Game[]> {
-    return this.http.get<Game[]>(this.apiUrl + 'game/not-started');
+    return this.http.get<Game[]>(`${this.apiUrl}/game/not-started`);
   }
 
   getPlayersInGame(gameName: string): Observable<IPlayer[]> {
-    return this.http.get<IPlayer[]>(this.apiUrl + 'game/players/' + gameName);
+    return this.http.get<IPlayer[]>(`${this.apiUrl}/game/players/${gameName}`);
   }
 
   getGame(gameName: string): Observable<Game> {
-    return this.http.get<Game>(this.apiUrl + 'game/' + gameName);
+    return this.http.get<Game>(`${this.apiUrl}/game/${gameName}`);
   }
 }

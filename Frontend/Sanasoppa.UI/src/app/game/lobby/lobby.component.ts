@@ -67,7 +67,7 @@ export class LobbyComponent implements OnInit {
   refeshPlayers() {
     this.gameHubService.getPlayersInGame(this.name).subscribe({
       next: players => (this.players = players),
-      error: error => console.log(error),
+      error: error => console.error(error),
     });
   }
 }

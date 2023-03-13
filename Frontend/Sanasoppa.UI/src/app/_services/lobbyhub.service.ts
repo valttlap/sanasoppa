@@ -20,7 +20,7 @@ export class LobbyHubService {
   startConnection(user: User) {
     this.busyService.busy();
     this.hubConnection = new HubConnectionBuilder()
-      .withUrl(this.hubUrl + 'lobbyhub', {
+      .withUrl(`${this.hubUrl}/lobbyhub`, {
         accessTokenFactory: () => user.token,
         transport: HttpTransportType.WebSockets,
       })
