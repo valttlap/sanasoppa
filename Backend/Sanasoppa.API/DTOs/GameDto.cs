@@ -1,8 +1,6 @@
-﻿namespace Sanasoppa.API.DTOs
+﻿namespace Sanasoppa.API.DTOs;
+public class GameDto
 {
-    public class GameDto
-    {
-        public string Name { get; set; } = default!;
-        public int Players { get; set; }
-    }
+    public string Name { get; set; } = default!;
+    public int Players { get; set; }
 }

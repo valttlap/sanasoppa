@@ -76,6 +76,6 @@ export class ErrorInterceptor implements HttpInterceptor {
 
   private handleUnexpectedError(error: HttpErrorResponse) {
     this.toastr.error('Something unexpected went wrong');
-    console.log(error);
+    console.error(error);
   }
 }

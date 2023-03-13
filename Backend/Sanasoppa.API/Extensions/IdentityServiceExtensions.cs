@@ -5,61 +5,60 @@ using Sanasoppa.API.Data;
 using Sanasoppa.API.Entities;
 using System.Text;
 
-namespace Sanasoppa.API.Extensions
+namespace Sanasoppa.API.Extensions;
+
+public static class IdentityServiceExtensions
 {
-    public static class IdentityServiceExtensions
+    public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration config)
     {
-        public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration config)
+        services.AddIdentityCore<AppUser>(opt =>
         {
-            services.AddIdentityCore<AppUser>(opt =>
-            {
-                opt.Password.RequireLowercase = true;
-                opt.Password.RequireUppercase = true;
-                opt.Password.RequireDigit = true;
-                opt.Password.RequireNonAlphanumeric = true;
-                opt.Password.RequiredLength = 8;
-            })
-                .AddRoles<AppRole>()
-                .AddRoleManager<RoleManager<AppRole>>()
-                .AddEntityFrameworkStores<DataContext>();
+            opt.Password.RequireLowercase = true;
+            opt.Password.RequireUppercase = true;
+            opt.Password.RequireDigit = true;
+            opt.Password.RequireNonAlphanumeric = true;
+            opt.Password.RequiredLength = 8;
+        })
+            .AddRoles<AppRole>()
+            .AddRoleManager<RoleManager<AppRole>>()
+            .AddEntityFrameworkStores<DataContext>();
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding
-                            .UTF8.GetBytes(config["TokenKey"] ?? throw new Exception("Token key not found"))),
-                        ValidateIssuer = false,
-                        ValidateAudience = false
-                    };
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding
+                        .UTF8.GetBytes(config["TokenKey"] ?? throw new Exception("Token key not found"))),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
 
-                    options.Events = new JwtBearerEvents
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
                     {
-                        OnMessageReceived = context =>
+                        var accessToken = context.Request.Query["access_token"];
+
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
                         {
-                            var accessToken = context.Request.Query["access_token"];
-
-                            var path = context.HttpContext.Request.Path;
-                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
-                            {
-                                context.Token = accessToken;
-                            }
-
-                            return Task.CompletedTask;
+                            context.Token = accessToken;
                         }
-                    };
-                });
 
-            services.AddAuthorization(opt =>
-            {
-                opt.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
-                opt.AddPolicy("RequireModeratorRole", policy => policy.RequireRole("Admin", "Moderator"));
-                opt.AddPolicy("RequireMemberRole", policy => policy.RequireRole("Admin", "Moderator", "Member"));
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
-            return services;
-        }
+        services.AddAuthorization(opt =>
+        {
+            opt.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
+            opt.AddPolicy("RequireModeratorRole", policy => policy.RequireRole("Admin", "Moderator"));
+            opt.AddPolicy("RequireMemberRole", policy => policy.RequireRole("Admin", "Moderator", "Member"));
+        });
+
+        return services;
     }
 }

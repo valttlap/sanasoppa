@@ -1,13 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace Sanasoppa.API.Entities
+namespace Sanasoppa.API.Entities;
+public class AppRole : IdentityRole<int>
 {
-    public class AppRole : IdentityRole<int>
+    public AppRole() 
     {
-        public AppRole() 
-        {
-            UserRoles = new List<AppUserRole>();
-        }
-        public ICollection<AppUserRole> UserRoles { get; set; }
+        UserRoles = new List<AppUserRole>();
     }
+    public ICollection<AppUserRole> UserRoles { get; set; }
 }

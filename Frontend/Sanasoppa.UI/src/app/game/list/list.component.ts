@@ -78,7 +78,7 @@ export class ListComponent implements OnInit, OnDestroy {
         this.router.navigate(['lobby', name]);
       })
       .catch(error => {
-        console.log(error);
+        console.error(error);
       });
   }
 }

@@ -1,10 +1,6 @@
-﻿using Sanasoppa.API.Entities;
-
-namespace Sanasoppa.API.DTOs
+﻿namespace Sanasoppa.API.DTOs;
+public class PlayerDto
 {
-    public class PlayerDto
-    {
-        public string Name { get; set; } = default!;
-        public bool IsHost { get; set; }
-    }
+    public string Name { get; set; } = default!;
+    public bool IsHost { get; set; }
 }

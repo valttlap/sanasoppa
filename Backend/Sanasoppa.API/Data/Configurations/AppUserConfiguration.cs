@@ -2,16 +2,14 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Sanasoppa.API.Entities;
 
-namespace Sanasoppa.API.Data.Configurations
+namespace Sanasoppa.API.Data.Configurations;
+public class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
 {
-    public class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
+    public void Configure(EntityTypeBuilder<AppUser> builder)
     {
-        public void Configure(EntityTypeBuilder<AppUser> builder)
-        {
-            builder.HasMany(ur => ur.UserRoles)
-                .WithOne(u => u.User)
-                .HasForeignKey(ur => ur.UserId)
-                .IsRequired();
-        }
+        builder.HasMany(ur => ur.UserRoles)
+            .WithOne(u => u.User)
+            .HasForeignKey(ur => ur.UserId)
+            .IsRequired();
     }
 }

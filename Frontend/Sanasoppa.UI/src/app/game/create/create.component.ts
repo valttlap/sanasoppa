@@ -23,7 +23,7 @@ export class CreateComponent implements OnInit {
         this.router.navigate(['/lobby', gameName]);
       })
       .catch((e: unknown) => {
-        console.log(e);
+        console.error(e);
       });
   }
 }
