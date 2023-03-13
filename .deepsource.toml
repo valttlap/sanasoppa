@@ -1,6 +1,6 @@
 version = 1
 
-exclude_patterns = ["Migrations/**"]
+exclude_patterns = ["**/Migrations/**"]
 
 [[analyzers]]
 name = "javascript"
