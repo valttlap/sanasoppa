@@ -12,6 +12,6 @@ public static class ClaimsPrincipalExtensions
     public static int? GetUserId(this ClaimsPrincipal user)
     {
         var userIdString = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return userIdString != null ? int.Parse(userIdString) : null;
+        return int.TryParse(userIdString, out int userId) ? userId : null;
     }
 }
