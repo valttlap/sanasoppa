@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Sanasoppa.API.Data.Repositories;
+using Sanasoppa.API.Helpers;
 using Sanasoppa.API.Interfaces;
 using Sanasoppa.API.Services;
 
@@ -10,10 +12,10 @@ public static class ApplicationServiceExtension
     {
         services.AddCors();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IEmailService, EmailService>();
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         services.AddSignalR();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-
         return services;
     }
 }

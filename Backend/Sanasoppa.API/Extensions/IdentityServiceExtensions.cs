@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Sanasoppa.API.Data;
 using Sanasoppa.API.Entities;
+using Sanasoppa.API.Helpers;
 using System.Text;
 
 namespace Sanasoppa.API.Extensions;
@@ -18,10 +19,26 @@ public static class IdentityServiceExtensions
             opt.Password.RequireDigit = true;
             opt.Password.RequireNonAlphanumeric = true;
             opt.Password.RequiredLength = 8;
+            opt.User.RequireUniqueEmail = true;
+            opt.SignIn.RequireConfirmedEmail = true;
+            opt.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+            opt.Tokens.EmailConfirmationTokenProvider = TokenOptions.DefaultEmailProvider;
+            opt.Tokens.PasswordResetTokenProvider = "PasswordResetTokenProvider";
         })
             .AddRoles<AppRole>()
+            .AddDefaultTokenProviders()
             .AddRoleManager<RoleManager<AppRole>>()
             .AddEntityFrameworkStores<DataContext>();
+        
+        services.Configure<DataProtectionTokenProviderOptions>(options =>
+        {
+            options.TokenLifespan = TimeSpan.FromHours(3);
+        });
+
+        services.Configure<DataProtectionTokenProviderOptions>("PasswordResetTokenProvider", options =>
+        {
+            options.TokenLifespan = TimeSpan.FromHours(1);
+        });
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>

@@ -36,6 +36,6 @@ public class AutoMapperProfiles : Profile
                 Name = p.Username,
                 IsHost = src.HostId == p.Id
             }).ToList());
-
+        CreateMap<RegisterDto, AppUser>();
     }
 }

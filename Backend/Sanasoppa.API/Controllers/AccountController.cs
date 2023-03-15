@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Net;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,35 +14,111 @@ public class AccountController : BaseApiController
     private readonly UserManager<AppUser> _userManager;
     private readonly ITokenService _tokenService;
     private const string DEFAULT_PASSWORD = "SanaSoppa2023!";
+    private readonly IMapper _mapper;
+    private readonly IEmailService _emailService;
 
-    public AccountController(UserManager<AppUser> userManager, ITokenService tokenService)
+    public AccountController(UserManager<AppUser> userManager, ITokenService tokenService, IMapper mapper, IEmailService emailService)
     {
+        _emailService = emailService;
+        _mapper = mapper;
         _userManager = userManager;
         _tokenService = tokenService;
     }
 
-    [Authorize(Policy = "RequireModeratorRole")]
-    [HttpPost("add-user")]
-    public async Task<ActionResult<UserDto>> AddUser(string username)
+    [HttpPost("register")]
+    public async Task<ActionResult<UserDto>> AddUser(RegisterDto registerDto)
     {
-        if (await UserExists(username)) return BadRequest("Username is taken");
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (await UserExists(registerDto.Username)) return BadRequest("Username is taken");
 
-        var user = new AppUser
-        {
-            UserName = username.ToLower(),
-            HasDefaultPassword = true,
-        };
+        var user = _mapper.Map<AppUser>(registerDto);
 
-        var result = await _userManager.CreateAsync(user, DEFAULT_PASSWORD);
+        user.UserName = registerDto.Username.ToLower();
+        user.Email = registerDto.Email.ToLower();
+
+        var result = await _userManager.CreateAsync(user, registerDto.Password);
 
         if (!result.Succeeded) return BadRequest(result.Errors);
+
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+        var emailResult = await _emailService.SendConfirmationEmailAsync(user.Email, token);
 
         return new UserDto
         {
             Username = user.UserName,
-            HasDefaultPassword = true
+            Token = await _tokenService.CreateToken(user)
         };
     }
+
+    [HttpPost("confirm-email")]
+    public async Task<ActionResult> ConfirmEmail(ConfirmEmailDto confirmEmailDto)
+    {
+        var user = await _userManager.FindByEmailAsync(confirmEmailDto.Email);
+
+        if (user == null) return BadRequest("Invalid email");
+
+        var result = await _userManager.ConfirmEmailAsync(user, confirmEmailDto.Token);
+
+        if (!result.Succeeded) return BadRequest(result.Errors);
+
+        return Ok();
+    }
+
+    [Authorize]
+    [HttpPost("resend-email-confirm")]
+    public async Task<ActionResult> ResendEmailConfirm()
+    {
+        var user = await _userManager.GetUserAsync(User);
+
+        if (user == null) return BadRequest("User not found");
+
+        if (user.EmailConfirmed) return BadRequest("Email already confirmed");
+
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var emailResult = await _emailService.SendConfirmationEmailAsync(user.Email!, token);
+
+        if (!emailResult)
+        {
+            return StatusCode((int)HttpStatusCode.InternalServerError, "Failed to send email. Try again later or contact support.");
+        }
+
+        return Ok();
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<ActionResult> ForgotPassword(string email)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user == null) return Ok();
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        var emailResult = await _emailService.SendPasswordResetEmailAsync(user.Email!, token);
+
+        if (!emailResult)
+        {
+            return StatusCode((int)HttpStatusCode.InternalServerError, "Failed to send email. Try again later or contact support.");
+        }
+
+        return Ok();
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<ActionResult> ResetPassword(ResetPasswordDto resetPasswordDto)
+    {
+        var user = await _userManager.FindByEmailAsync(resetPasswordDto.Email);
+
+        if (user == null) return BadRequest("User not found");
+
+        var result = await _userManager.ResetPasswordAsync(user, resetPasswordDto.Token, resetPasswordDto.Password);
+
+        if (!result.Succeeded) return BadRequest(result.Errors);
+
+        return Ok();
+    }
+
 
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
@@ -57,8 +135,7 @@ public class AccountController : BaseApiController
         return new UserDto
         {
             Username = user.UserName!,
-            Token = await _tokenService.CreateToken(user),
-            HasDefaultPassword = user.HasDefaultPassword
+            Token = await _tokenService.CreateToken(user)
         };
     }
 
