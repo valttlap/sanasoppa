@@ -72,29 +72,4 @@ public class AdminController : BaseApiController
         return NoContent();
     }
 
-    [Authorize(Policy = "RequrireAdminRole")]
-    [HttpPut("reset-password/{username}")]
-    public async Task<ActionResult> ResetUserPassword(string username)
-    {
-        var user = await _userManager.FindByNameAsync(username);
-
-        if (user == null) return NotFound();
-
-        var result = await _userManager.ChangePasswordAsync(user, user.PasswordHash!, DEFAULT_PASSWORD);
-
-        if (!result.Succeeded) return BadRequest("Failed to reset password");
-
-        user.HasDefaultPassword = true;
-
-        result = await _userManager.UpdateAsync(user);
-        if (!result.Succeeded) return BadRequest("Failed to reset password");
-
-        var userRoles = await _userManager.GetRolesAsync(user);
-        result = await _userManager.RemoveFromRolesAsync(user, userRoles);
-
-        if (!result.Succeeded) return BadRequest("Failed to remove user's roles");
-
-        return Ok();
-    }
-
 }

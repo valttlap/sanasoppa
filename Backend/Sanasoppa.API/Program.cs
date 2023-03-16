@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Sanasoppa.API.Data;
 using Sanasoppa.API.Entities;
 using Sanasoppa.API.Extensions;
@@ -12,29 +13,14 @@ builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddIdentityServices(builder.Configuration);
 
 var connString = "";
+var connStringBuilder = new NpgsqlConnectionStringBuilder(
+        builder.Configuration.GetConnectionString("DefaultConnection"));
 if (builder.Environment.IsDevelopment())
-    connString = builder.Configuration.GetConnectionString("DefaultConnection");
-else
 {
-    var connUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-
-    if (connUrl == null)
-    {
-        throw new ArgumentNullException(nameof(connUrl), $"The value of '{nameof(connUrl)}' is null. Please set the environment variable 'DATABASE_URL' with a valid connection string.");
-    }
-
-    connUrl = connUrl.Replace("postgres://", string.Empty);
-    var pgUserPass = connUrl.Split("@")[0];
-    var pgHostPortDb = connUrl.Split("@")[1];
-    var pgHostPort = pgHostPortDb.Split("/")[0];
-    var pgDb = pgHostPortDb.Split("/")[1];
-    var pgUser = pgUserPass.Split(":")[0];
-    var pgPass = pgUserPass.Split(":")[1];
-    var pgHost = pgHostPort.Split(":")[0];
-    var pgPort = pgHostPort.Split(":")[1];
-
-    connString = $"Server={pgHost};Port={pgPort};User Id={pgUser};Password={pgPass};Database={pgDb};";
+    connStringBuilder.Password = builder.Configuration["DbPassword"];
 }
+connString = connStringBuilder.ConnectionString;
+
 builder.Services.AddDbContext<DataContext>(opt =>
 {
     opt.UseNpgsql(connString);

@@ -16,9 +16,16 @@ public class AccountController : BaseApiController
     private const string DEFAULT_PASSWORD = "SanaSoppa2023!";
     private readonly IMapper _mapper;
     private readonly IEmailService _emailService;
+    private readonly IReCaptchaService _reCaptchaService;
 
-    public AccountController(UserManager<AppUser> userManager, ITokenService tokenService, IMapper mapper, IEmailService emailService)
+    public AccountController(
+        UserManager<AppUser> userManager,
+        ITokenService tokenService,
+        IMapper mapper,
+        IEmailService emailService,
+        IReCaptchaService reCaptchaService)
     {
+        _reCaptchaService = reCaptchaService;
         _emailService = emailService;
         _mapper = mapper;
         _userManager = userManager;
@@ -29,6 +36,10 @@ public class AccountController : BaseApiController
     public async Task<ActionResult<UserDto>> AddUser(RegisterDto registerDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!await _reCaptchaService.ValidateReCaptchaAsync(registerDto.ReCaptchaResponse))
+        {
+            return BadRequest("Invalid ReCaptcha");
+        }
         if (await UserExists(registerDto.Username)) return BadRequest("Username is taken");
 
         var user = _mapper.Map<AppUser>(registerDto);
@@ -54,6 +65,11 @@ public class AccountController : BaseApiController
     [HttpPost("confirm-email")]
     public async Task<ActionResult> ConfirmEmail(ConfirmEmailDto confirmEmailDto)
     {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!await _reCaptchaService.ValidateReCaptchaAsync(confirmEmailDto.ReCaptchaResponse))
+        {
+            return BadRequest("Invalid ReCaptcha");
+        }
         var user = await _userManager.FindByEmailAsync(confirmEmailDto.Email);
 
         if (user == null) return BadRequest("Invalid email");
@@ -87,9 +103,14 @@ public class AccountController : BaseApiController
     }
 
     [HttpPost("forgot-password")]
-    public async Task<ActionResult> ForgotPassword(string email)
+    public async Task<ActionResult> ForgotPassword(ForgotPasswordDto forgotPasswordDto)
     {
-        var user = await _userManager.FindByEmailAsync(email);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!await _reCaptchaService.ValidateReCaptchaAsync(forgotPasswordDto.ReCaptchaResponse))
+        {
+            return BadRequest("Invalid ReCaptcha");
+        }
+        var user = await _userManager.FindByEmailAsync(forgotPasswordDto.Email);
 
         if (user == null) return Ok();
 
@@ -123,6 +144,11 @@ public class AccountController : BaseApiController
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
     {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!await _reCaptchaService.ValidateReCaptchaAsync(loginDto.ReCaptchaResponse))
+        {
+            return BadRequest("Invalid ReCaptcha");
+        }
         var user = await _userManager.Users
             .SingleOrDefaultAsync(x => x.UserName == loginDto.Username);
 
@@ -150,25 +176,6 @@ public class AccountController : BaseApiController
         if (!result.Succeeded)
         {
             return BadRequest(result.Errors);
-        }
-
-        if (user.HasDefaultPassword)
-        {
-            user.HasDefaultPassword = false;
-
-            var roleResult = await _userManager.AddToRoleAsync(user, "Member");
-
-            if (!roleResult.Succeeded)
-            {
-                return BadRequest(roleResult.Errors);
-            }
-
-            var updateResult = await _userManager.UpdateAsync(user);
-
-            if (!updateResult.Succeeded)
-            {
-                return BadRequest(updateResult.Errors);
-            }
         }
 
         return Ok();
