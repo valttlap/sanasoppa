@@ -7,12 +7,10 @@ namespace Sanasoppa.API.Services;
 public class ReCaptchaService : IReCaptchaService
 {
     private readonly IConfiguration _configuration;
-    private readonly IWebHostEnvironment _environment;
 
-    public ReCaptchaService(IConfiguration configuration, IWebHostEnvironment environment)
+    public ReCaptchaService(IConfiguration configuration)
     {
         _configuration = configuration;
-        _environment = environment;
     }
 
     public async Task<bool> ValidateReCaptchaAsync(string token)
