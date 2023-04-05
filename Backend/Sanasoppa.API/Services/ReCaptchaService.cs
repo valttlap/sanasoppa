@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Sanasoppa.API.Data.Models;
+using Sanasoppa.API.Responses.Models;
 using Sanasoppa.API.Interfaces;
 
 namespace Sanasoppa.API.Services;

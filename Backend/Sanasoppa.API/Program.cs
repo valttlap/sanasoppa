@@ -5,10 +5,12 @@ using Sanasoppa.API.Data;
 using Sanasoppa.API.Entities;
 using Sanasoppa.API.Extensions;
 using Sanasoppa.API.Hubs;
+using Sanasoppa.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddConfigurationServices(builder.Configuration);
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddIdentityServices(builder.Configuration);
 
@@ -27,6 +29,9 @@ builder.Services.AddDbContext<DataContext>(opt =>
 });
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionMiddleware>();
+
 if (builder.Environment.IsDevelopment())
 {
     app.UseCors(builder => builder

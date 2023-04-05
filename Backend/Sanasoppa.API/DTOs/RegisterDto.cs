@@ -13,4 +13,5 @@ public class RegisterDto
     public string Email { get; set; } = default!;
     [Required]
     public string ReCaptchaResponse { get; set; } = default!;
+    public string ClientId { get; set; } = default!;
 }

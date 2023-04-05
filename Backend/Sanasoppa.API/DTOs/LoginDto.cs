@@ -9,4 +9,5 @@ public class LoginDto
     public string Password { get; set; } = default!;
     [Required]
     public string ReCaptchaResponse { get; set; } = default!;
+    public string ClientId { get; set; } = default!;
 }

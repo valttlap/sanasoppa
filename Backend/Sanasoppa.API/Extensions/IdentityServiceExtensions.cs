@@ -21,7 +21,6 @@ public static class IdentityServiceExtensions
             opt.Password.RequiredLength = 8;
             opt.User.RequireUniqueEmail = true;
             opt.SignIn.RequireConfirmedEmail = true;
-            opt.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
             opt.Tokens.EmailConfirmationTokenProvider = TokenOptions.DefaultEmailProvider;
             opt.Tokens.PasswordResetTokenProvider = "PasswordResetTokenProvider";
         })
@@ -29,7 +28,7 @@ public static class IdentityServiceExtensions
             .AddDefaultTokenProviders()
             .AddRoleManager<RoleManager<AppRole>>()
             .AddEntityFrameworkStores<DataContext>();
-        
+
         services.Configure<DataProtectionTokenProviderOptions>(options =>
         {
             options.TokenLifespan = TimeSpan.FromHours(3);

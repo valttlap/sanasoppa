@@ -25,7 +25,7 @@ public class LobbyHub : Hub
         {
             throw new ArgumentException($"The game with the name {gameName} already exists");
         }
-        
+
         var game = new Game
         {
             Name = gameName,
@@ -52,7 +52,7 @@ public class LobbyHub : Hub
             throw new HubException("Something went wrong while creating a game");
         }
         return gameName;
-        
+
     }
 
     private async void OnGameListChanged(object? sender, GameListChangedEventArgs e)

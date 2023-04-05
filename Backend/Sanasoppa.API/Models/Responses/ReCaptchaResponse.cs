@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
-namespace Sanasoppa.API.Data.Models;
+namespace Sanasoppa.API.Responses.Models;
 
 public class ReCaptchaResponse
 {

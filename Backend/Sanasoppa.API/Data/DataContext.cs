@@ -17,6 +17,7 @@ public class DataContext : IdentityDbContext<AppUser, AppRole, int,
     public DbSet<Round> Rounds { get; set; } = default!;
     public DbSet<Explanation> Explanations { get; set; } = default!;
     public DbSet<Vote> Votes { get; set; } = default!;
+    public DbSet<RefreshToken> RefreshTokens { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

@@ -17,7 +17,7 @@ public class RoundConfiguration : IEntityTypeConfiguration<Round>
             .HasForeignKey(r => r.DasherId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
-        
+
         builder.HasMany(r => r.Explanations)
             .WithOne(e => e.Round)
             .HasForeignKey(e => e.RoundId)

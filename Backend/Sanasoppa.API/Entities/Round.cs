@@ -1,8 +1,8 @@
 namespace Sanasoppa.API.Entities;
 public class Round
 {
-    public Round() 
-    { 
+    public Round()
+    {
         Explanations = new List<Explanation>();
         Votes = new List<Vote>();
     }

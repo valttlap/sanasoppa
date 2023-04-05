@@ -23,14 +23,15 @@ public class UnitOfWork : IUnitOfWork
     public IRoundRepository RoundRepository => new RoundRepository(_context);
     public IExplanationRepository ExplanationRepository => new ExplanationRepository(_context);
     public IVoteRepository VoteRepository => new VoteRepository(_context);
+    public IRefreshTokenRepository RefreshTokenRepository => new RefreshTokenRepository(_context);
 
-    
+
 
     public async Task<bool> Complete()
     {
         var hasGameChanges = HasGameChanged();
         var saved = await _context.SaveChangesAsync() > 0;
-        if (saved && hasGameChanges) 
+        if (saved && hasGameChanges)
         {
             OnGameListChanged(new GameListChangedEventArgs(Enumerable.Empty<Game>()));
         }
@@ -46,7 +47,7 @@ public class UnitOfWork : IUnitOfWork
     {
         GameListChanged?.Invoke(this, e);
     }
-    
+
     public void SubscribeToGameListChangedEvent(EventHandler<GameListChangedEventArgs> handler)
     {
         GameListChanged += handler;

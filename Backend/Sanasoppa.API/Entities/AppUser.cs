@@ -7,6 +7,8 @@ public partial class AppUser
     [Required]
     [EmailAddress]
     public override string? Email { get; set; }
+    [Required]
+    public override string? UserName { get; set; }
 }
 
 public partial class AppUser : IdentityUser<int>

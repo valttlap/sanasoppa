@@ -144,7 +144,7 @@ public class GameHub : Hub
             throw new ArgumentException("Invalid game name", nameof(gameName));
         }
         _uow.GameRepository.StartGame(game);
-        
+
 
         if (await _uow.Complete())
         {
@@ -346,11 +346,11 @@ public class GameHub : Hub
     private static Player GetNextDasher(Game game)
     {
         Player nextDasher;
-        if (game.CurrentRound == null) 
+        if (game.CurrentRound == null)
         {
             nextDasher = game.Host;
         }
-        else 
+        else
         {
             var players = game.Players.OrderBy(p => p.Id).ToList();
             var dasherIndex = players.FindIndex(p => p.Id == game.CurrentRound.DasherId);
@@ -375,7 +375,7 @@ public class GameHub : Hub
         }
 
         var game = await _uow.GameRepository.GetWholeGameAsync(player.GameId.Value);
-        
+
         if (game == null)
         {
             throw new InvalidOperationException("Game not found for connection ID: " + connectionId);

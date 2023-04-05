@@ -23,7 +23,7 @@ public class GameConfiguration : IEntityTypeConfiguration<Game>
             .WithOne(r => r.Game)
             .HasForeignKey(r => r.GameId)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         builder.HasOne(g => g.CurrentRound)
             .WithMany()
             .HasForeignKey(g => g.CurrentRoundId)
@@ -34,7 +34,7 @@ public class GameConfiguration : IEntityTypeConfiguration<Game>
             .HasConversion<int>()
             .IsRequired()
             .HasDefaultValue(GameState.NotStarted);
-        
+
         builder.HasOne(g => g.Host)
             .WithMany()
             .HasForeignKey(g => g.HostId)

@@ -13,23 +13,25 @@ public class AccountController : BaseApiController
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly ITokenService _tokenService;
-    private const string DEFAULT_PASSWORD = "SanaSoppa2023!";
     private readonly IMapper _mapper;
     private readonly IEmailService _emailService;
     private readonly IReCaptchaService _reCaptchaService;
+    private readonly IUnitOfWork _uow;
 
     public AccountController(
         UserManager<AppUser> userManager,
         ITokenService tokenService,
         IMapper mapper,
         IEmailService emailService,
-        IReCaptchaService reCaptchaService)
+        IReCaptchaService reCaptchaService,
+        IUnitOfWork uow)
     {
         _reCaptchaService = reCaptchaService;
         _emailService = emailService;
         _mapper = mapper;
         _userManager = userManager;
         _tokenService = tokenService;
+        _uow = uow;
     }
 
     [HttpPost("register")]
@@ -51,14 +53,24 @@ public class AccountController : BaseApiController
 
         if (!result.Succeeded) return BadRequest(result.Errors);
 
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var newTokens = await _tokenService.CreateToken(user, registerDto.ClientId);
 
+        _uow.RefreshTokenRepository.AddRefreshToken(newTokens.RefreshToken);
+
+        if (!await _uow.Complete())
+        {
+            return BadRequest("Failed to add refresh token");
+        }
+
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var emailResult = await _emailService.SendConfirmationEmailAsync(user.Email, token);
 
         return new UserDto
         {
             Username = user.UserName,
-            Token = await _tokenService.CreateToken(user)
+            Token = newTokens.AccessToken,
+            RefreshToken = newTokens.RefreshToken.Token,
+            RefreshTokenExpiration = newTokens.RefreshToken.Expires,
         };
     }
 
@@ -158,10 +170,14 @@ public class AccountController : BaseApiController
 
         if (!result) return Unauthorized("Invalid usernamer or password");
 
+        var newTokens = await _tokenService.CreateToken(user, loginDto.ClientId);
+
         return new UserDto
         {
             Username = user.UserName!,
-            Token = await _tokenService.CreateToken(user)
+            Token = newTokens.AccessToken,
+            RefreshToken = newTokens.RefreshToken.Token,
+            RefreshTokenExpiration = newTokens.RefreshToken.Expires,
         };
     }
 
