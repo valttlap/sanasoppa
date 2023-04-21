@@ -31,5 +31,6 @@ jobs:
       run: export DEEPSOURCE_DSN=${{ secrets.DEEPSOURCE_DSN }}
     - name: Report coverage to DeepSource
       run: |
-        TEST_GUID=$(grep -Po '<TestRun id="\K[^"]*' /tmp/test-results/*/TestRun/*.trx)
+        TRX_FILE=$(find /tmp/test-results -name '*.trx')
+        TEST_GUID=$(grep -Po '<TestRun id="\K[^"]*' $TRX_FILE)
         ./bin/deepsource report --analyzer test-coverage --key csharp --value-file /tmp/test-results/$TEST_GUID/coverage.cobertura.xml
