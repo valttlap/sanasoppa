@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Sanasoppa.API.Data;
 using Sanasoppa.API.Entities;
+using Sanasoppa.API.Interfaces;
 using System.Text;
 
 namespace Sanasoppa.API.Extensions;
@@ -18,10 +19,25 @@ public static class IdentityServiceExtensions
             opt.Password.RequireDigit = true;
             opt.Password.RequireNonAlphanumeric = true;
             opt.Password.RequiredLength = 8;
+            opt.User.RequireUniqueEmail = true;
+            opt.SignIn.RequireConfirmedEmail = true;
+            opt.Tokens.EmailConfirmationTokenProvider = TokenOptions.DefaultEmailProvider;
+            opt.Tokens.PasswordResetTokenProvider = "PasswordResetTokenProvider";
         })
             .AddRoles<AppRole>()
+            .AddDefaultTokenProviders()
             .AddRoleManager<RoleManager<AppRole>>()
             .AddEntityFrameworkStores<DataContext>();
+
+        services.Configure<DataProtectionTokenProviderOptions>(options =>
+        {
+            options.TokenLifespan = TimeSpan.FromHours(3);
+        });
+
+        services.Configure<DataProtectionTokenProviderOptions>("PasswordResetTokenProvider", options =>
+        {
+            options.TokenLifespan = TimeSpan.FromHours(1);
+        });
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -34,6 +50,8 @@ public static class IdentityServiceExtensions
                     ValidateIssuer = false,
                     ValidateAudience = false
                 };
+
+                options.SaveToken = true;
 
                 options.Events = new JwtBearerEvents
                 {
@@ -48,7 +66,25 @@ public static class IdentityServiceExtensions
                         }
 
                         return Task.CompletedTask;
-                    }
+                    },
+                    /* OnAuthenticationFailed = context =>
+                    {
+                        RefreshToken refreshToken = context.HttpContext.Request.Cookies["refreshToken"];
+                        if (!string.IsNullOrEmpty(refreshToken))
+                        {
+                            var tokenService = context.HttpContext.RequestServices.GetRequiredService<ITokenService>();
+                            try 
+                            {
+                                var (newAccessToken, newRefreshToken) = tokenService.RefreshToken(refreshToken);
+                                context.Response.Headers.Add("Authorization", "Bearer " + newAccessToken);
+                                context.Response.Cookies.Append("refreshToken", newRefreshToken);
+                            }
+                            catch (SecurityTokenException)
+                            {
+                                context.Fail("Unauthorized");
+                            }
+                        }
+                    } */
                 };
             });
 

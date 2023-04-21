@@ -24,7 +24,8 @@ public static class Seed
         var admin = new AppUser
         {
             UserName = "admin",
-            HasDefaultPassword = true,
+            Email = "admin@sanasoppa.app",
+            EmailConfirmed = true,
         };
 
         var result = await userManager.CreateAsync(admin, "SanaSoppa2023!");
@@ -39,16 +40,10 @@ public static class Seed
         {
             var defaultUsers = new List<AppUser>
             {
-                new AppUser{UserName = "user1", HasDefaultPassword = true},
-                new AppUser{UserName = "user2", HasDefaultPassword = true},
-                new AppUser{UserName = "user3", HasDefaultPassword = true},
-                new AppUser{UserName = "user4", HasDefaultPassword = true},
-                new AppUser{UserName = "user5", HasDefaultPassword = true},
-                new AppUser{UserName = "user6", HasDefaultPassword = true},
-                new AppUser{UserName = "user7", HasDefaultPassword = true},
-                new AppUser{UserName = "user8", HasDefaultPassword = true},
-                new AppUser{UserName = "user9", HasDefaultPassword = true},
-                new AppUser{UserName = "user10", HasDefaultPassword = true},
+                new AppUser{UserName = "user1", Email = "user1@sanasoppa.app", EmailConfirmed = true},
+                new AppUser{UserName = "user2", Email = "user2@sanasoppa.app", EmailConfirmed = true},
+                new AppUser{UserName = "user3", Email = "user3@sanasoppa.app", EmailConfirmed = true},
+                new AppUser{UserName = "user4", Email = "user4@sanasoppa.app", EmailConfirmed = true}
             };
 
             foreach (var user in defaultUsers)

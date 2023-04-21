@@ -19,27 +19,10 @@ public class GameConfiguration : IEntityTypeConfiguration<Game>
             .HasForeignKey(p => p.GameId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.HasMany(g => g.Rounds)
-            .WithOne(r => r.Game)
-            .HasForeignKey(r => r.GameId)
-            .OnDelete(DeleteBehavior.Cascade);
-        
-        builder.HasOne(g => g.CurrentRound)
-            .WithMany()
-            .HasForeignKey(g => g.CurrentRoundId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.Property(g => g.GameState)
             .HasConversion<int>()
             .IsRequired()
             .HasDefaultValue(GameState.NotStarted);
-        
-        builder.HasOne(g => g.Host)
-            .WithMany()
-            .HasForeignKey(g => g.HostId)
-            .IsRequired(true)
-            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasIndex(g => g.Name)
             .IsUnique();

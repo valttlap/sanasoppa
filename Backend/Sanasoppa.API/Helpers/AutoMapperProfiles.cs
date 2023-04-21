@@ -34,8 +34,12 @@ public class AutoMapperProfiles : Profile
             .ConstructUsing(src => src.Players.Select(p => new PlayerDto
             {
                 Name = p.Username,
-                IsHost = src.HostId == p.Id
+                IsHost = p.IsHost
             }).ToList());
-
+        CreateMap<RegisterDto, AppUser>()
+            .ForMember(dest => dest.UserName,
+                opt => opt.MapFrom(src => src.Username))
+            .ForMember(dest => dest.Email,
+                opt => opt.MapFrom(src => src.Email));
     }
 }

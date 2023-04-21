@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Net;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,40 +13,154 @@ public class AccountController : BaseApiController
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly ITokenService _tokenService;
-    private const string DEFAULT_PASSWORD = "SanaSoppa2023!";
+    private readonly IMapper _mapper;
+    private readonly IEmailService _emailService;
+    private readonly IReCaptchaService _reCaptchaService;
+    private readonly IUnitOfWork _uow;
 
-    public AccountController(UserManager<AppUser> userManager, ITokenService tokenService)
+    public AccountController(
+        UserManager<AppUser> userManager,
+        ITokenService tokenService,
+        IMapper mapper,
+        IEmailService emailService,
+        IReCaptchaService reCaptchaService,
+        IUnitOfWork uow)
     {
+        _reCaptchaService = reCaptchaService;
+        _emailService = emailService;
+        _mapper = mapper;
         _userManager = userManager;
         _tokenService = tokenService;
+        _uow = uow;
     }
 
-    [Authorize(Policy = "RequireModeratorRole")]
-    [HttpPost("add-user")]
-    public async Task<ActionResult<UserDto>> AddUser(string username)
+    [HttpPost("register")]
+    public async Task<ActionResult<UserDto>> AddUser(RegisterDto registerDto)
     {
-        if (await UserExists(username)) return BadRequest("Username is taken");
-
-        var user = new AppUser
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!await _reCaptchaService.ValidateReCaptchaAsync(registerDto.ReCaptchaResponse))
         {
-            UserName = username.ToLower(),
-            HasDefaultPassword = true,
-        };
+            return BadRequest("Invalid ReCaptcha");
+        }
+        if (await UserExists(registerDto.Username)) return BadRequest("Username is taken");
 
-        var result = await _userManager.CreateAsync(user, DEFAULT_PASSWORD);
+        var user = _mapper.Map<AppUser>(registerDto);
+
+        user.UserName = registerDto.Username.ToLower();
+        user.Email = registerDto.Email.ToLower();
+
+        var result = await _userManager.CreateAsync(user, registerDto.Password);
 
         if (!result.Succeeded) return BadRequest(result.Errors);
+
+        var newTokens = await _tokenService.CreateToken(user, registerDto.ClientId);
+
+        _uow.RefreshTokenRepository.AddRefreshToken(newTokens.RefreshToken);
+
+        if (!await _uow.Complete())
+        {
+            return BadRequest("Failed to add refresh token");
+        }
+
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var emailResult = await _emailService.SendConfirmationEmailAsync(user.Email, token);
 
         return new UserDto
         {
             Username = user.UserName,
-            HasDefaultPassword = true
+            Token = newTokens.AccessToken,
+            RefreshToken = newTokens.RefreshToken.Token,
+            RefreshTokenExpiration = newTokens.RefreshToken.Expires,
         };
     }
+
+    [HttpPost("confirm-email")]
+    public async Task<ActionResult> ConfirmEmail(ConfirmEmailDto confirmEmailDto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!await _reCaptchaService.ValidateReCaptchaAsync(confirmEmailDto.ReCaptchaResponse))
+        {
+            return BadRequest("Invalid ReCaptcha");
+        }
+        var user = await _userManager.FindByEmailAsync(confirmEmailDto.Email);
+
+        if (user == null) return BadRequest("Invalid email");
+
+        var result = await _userManager.ConfirmEmailAsync(user, confirmEmailDto.Token);
+
+        if (!result.Succeeded) return BadRequest(result.Errors);
+
+        return Ok();
+    }
+
+    [Authorize]
+    [HttpPost("resend-email-confirm")]
+    public async Task<ActionResult> ResendEmailConfirm()
+    {
+        var user = await _userManager.GetUserAsync(User);
+
+        if (user == null) return BadRequest("User not found");
+
+        if (user.EmailConfirmed) return BadRequest("Email already confirmed");
+
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var emailResult = await _emailService.SendConfirmationEmailAsync(user.Email!, token);
+
+        if (!emailResult)
+        {
+            return StatusCode((int)HttpStatusCode.InternalServerError, "Failed to send email. Try again later or contact support.");
+        }
+
+        return Ok();
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<ActionResult> ForgotPassword(ForgotPasswordDto forgotPasswordDto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!await _reCaptchaService.ValidateReCaptchaAsync(forgotPasswordDto.ReCaptchaResponse))
+        {
+            return BadRequest("Invalid ReCaptcha");
+        }
+        var user = await _userManager.FindByEmailAsync(forgotPasswordDto.Email);
+
+        if (user == null) return Ok();
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        var emailResult = await _emailService.SendPasswordResetEmailAsync(user.Email!, token);
+
+        if (!emailResult)
+        {
+            return StatusCode((int)HttpStatusCode.InternalServerError, "Failed to send email. Try again later or contact support.");
+        }
+
+        return Ok();
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<ActionResult> ResetPassword(ResetPasswordDto resetPasswordDto)
+    {
+        var user = await _userManager.FindByEmailAsync(resetPasswordDto.Email);
+
+        if (user == null) return BadRequest("User not found");
+
+        var result = await _userManager.ResetPasswordAsync(user, resetPasswordDto.Token, resetPasswordDto.Password);
+
+        if (!result.Succeeded) return BadRequest(result.Errors);
+
+        return Ok();
+    }
+
 
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
     {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!await _reCaptchaService.ValidateReCaptchaAsync(loginDto.ReCaptchaResponse))
+        {
+            return BadRequest("Invalid ReCaptcha");
+        }
         var user = await _userManager.Users
             .SingleOrDefaultAsync(x => x.UserName == loginDto.Username);
 
@@ -54,11 +170,14 @@ public class AccountController : BaseApiController
 
         if (!result) return Unauthorized("Invalid usernamer or password");
 
+        var newTokens = await _tokenService.CreateToken(user, loginDto.ClientId);
+
         return new UserDto
         {
             Username = user.UserName!,
-            Token = await _tokenService.CreateToken(user),
-            HasDefaultPassword = user.HasDefaultPassword
+            Token = newTokens.AccessToken,
+            RefreshToken = newTokens.RefreshToken.Token,
+            RefreshTokenExpiration = newTokens.RefreshToken.Expires,
         };
     }
 
@@ -73,25 +192,6 @@ public class AccountController : BaseApiController
         if (!result.Succeeded)
         {
             return BadRequest(result.Errors);
-        }
-
-        if (user.HasDefaultPassword)
-        {
-            user.HasDefaultPassword = false;
-
-            var roleResult = await _userManager.AddToRoleAsync(user, "Member");
-
-            if (!roleResult.Succeeded)
-            {
-                return BadRequest(roleResult.Errors);
-            }
-
-            var updateResult = await _userManager.UpdateAsync(user);
-
-            if (!updateResult.Succeeded)
-            {
-                return BadRequest(updateResult.Errors);
-            }
         }
 
         return Ok();

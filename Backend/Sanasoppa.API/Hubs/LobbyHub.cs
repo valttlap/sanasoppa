@@ -25,7 +25,7 @@ public class LobbyHub : Hub
         {
             throw new ArgumentException($"The game with the name {gameName} already exists");
         }
-        
+
         var game = new Game
         {
             Name = gameName,
@@ -39,20 +39,21 @@ public class LobbyHub : Hub
             player = new Player
             {
                 ConnectionId = Context.ConnectionId,
-                Username = Context.User!.GetUsername()!
+                Username = Context.User!.GetUsername()!,
+                IsHost = true,
+                IsOnline = true
             };
             _uow.PlayerRepository.AddPlayer(player);
             await _uow.Complete();
         }
         game.Players.Add(player);
-        game.HostId = player.Id;
         _uow.GameRepository.AddGame(game);
         if (!await _uow.Complete())
         {
             throw new HubException("Something went wrong while creating a game");
         }
         return gameName;
-        
+
     }
 
     private async void OnGameListChanged(object? sender, GameListChangedEventArgs e)

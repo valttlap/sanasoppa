@@ -3,7 +3,7 @@
 namespace Sanasoppa.API.Entities;
 public class AppRole : IdentityRole<int>
 {
-    public AppRole() 
+    public AppRole()
     {
         UserRoles = new List<AppUserRole>();
     }

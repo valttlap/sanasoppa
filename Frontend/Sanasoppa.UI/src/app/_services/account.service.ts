@@ -47,10 +47,6 @@ export class AccountService {
     this.currentUserSource.next(null);
   }
 
-  /* getDecodedToken(token: string) {
-    return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-  } */
-
   static getDecodedToken(token: string): IToken | null {
     const helper = new JwtHelperService();
     return helper.decodeToken<IToken>(token);

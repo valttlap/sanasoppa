@@ -10,10 +10,11 @@ public static class ApplicationServiceExtension
     {
         services.AddCors();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IReCaptchaService, ReCaptchaService>();
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         services.AddSignalR();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-
         return services;
     }
 }

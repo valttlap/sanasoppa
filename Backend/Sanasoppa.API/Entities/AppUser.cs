@@ -1,12 +1,21 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace Sanasoppa.API.Entities;
-public class AppUser : IdentityUser<int>
+public partial class AppUser
+{
+    [Required]
+    [EmailAddress]
+    public override string? Email { get; set; }
+    [Required]
+    public override string? UserName { get; set; }
+}
+
+public partial class AppUser : IdentityUser<int>
 {
     public AppUser()
     {
         UserRoles = new List<AppUserRole>();
     }
-    public bool HasDefaultPassword { get; set; }
     public ICollection<AppUserRole> UserRoles { get; set; }
 }

@@ -57,7 +57,7 @@ public class GameRepository : IGameRepository
     {
         var round = await _context.Rounds
             .Include(r => r.Dasher)
-            .Where(r => r.Id == game.CurrentRoundId)
+            .Where(r => r.IsCurrent && r.GameId == game.Id)
             .FirstOrDefaultAsync();
         return round?.Dasher;
     }

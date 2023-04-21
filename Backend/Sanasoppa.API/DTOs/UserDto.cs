@@ -3,5 +3,6 @@ public class UserDto
 {
     public string Username { get; set; } = default!;
     public string Token { get; set; } = default!;
-    public bool HasDefaultPassword { get; set; }
+    public string RefreshToken { get; set; } = default!;
+    public DateTime RefreshTokenExpiration { get; set; }
 }
