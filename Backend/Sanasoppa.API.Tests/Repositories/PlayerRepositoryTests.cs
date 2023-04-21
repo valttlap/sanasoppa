@@ -39,13 +39,13 @@ public class PlayerRepositoryTests
     {
         // Arrange
         using (var context = new DataContext(_options!))
-            {
-                var repository = new PlayerRepository(context);
+        {
+            var repository = new PlayerRepository(context);
 
-                // Act
-                repository.AddPlayer(_player1!);
-                await context.SaveChangesAsync();
-            }
+            // Act
+            repository.AddPlayer(_player1!);
+            await context.SaveChangesAsync();
+        }
 
         // Assert
         using (var context = new DataContext(_options!))
@@ -107,7 +107,7 @@ public class PlayerRepositoryTests
             Assert.That(result?.Username, Is.EqualTo("Test Player"));
         }
     }
-    
+
     [Test]
     public async Task GetPlayerByUsernameAsync_ShouldReturnPlayerByUsername()
     {
@@ -132,7 +132,7 @@ public class PlayerRepositoryTests
             Assert.That(result?.Username, Is.EqualTo("Test Player"));
         }
     }
-    
+
     [Test]
     public async Task GivePoints_ShouldGivePlayersPoints()
     {
@@ -152,7 +152,7 @@ public class PlayerRepositoryTests
             await context.SaveChangesAsync();
         }
 
-        
+
         // Assert
         using (var context = new DataContext(_options!))
         {
