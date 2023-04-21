@@ -242,9 +242,9 @@ public class PlayerRepositoryTests
             // Assert
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Count(), Is.EqualTo(1));
-            Assert.That(result?.FirstOrDefault()?.Id, Is.EqualTo(2));
-            Assert.That(result?.FirstOrDefault()?.ConnectionId, Is.EqualTo("456"));
-            Assert.That(result?.FirstOrDefault()?.Username, Is.EqualTo("Test Player 2"));
+            Assert.That(result?.FirstOrDefault()?.Id, Is.EqualTo(2), "Player 2 should be returned");
+            Assert.That(result?.FirstOrDefault()?.ConnectionId, Is.EqualTo("456"), "Player 2 should be returned");
+            Assert.That(result?.FirstOrDefault()?.Username, Is.EqualTo("Test Player 2"), "Player 2 should be returned");
         }
     }
 }
