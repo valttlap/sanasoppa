@@ -1,6 +1,11 @@
 version = 1
 
+test_patterns = ["Backend/Sanasoppa.API.Tests/**"]
+
 exclude_patterns = ["**/Migrations/**"]
+
+[[analyzers]]
+name = "test-coverage"
 
 [[analyzers]]
 name = "javascript"
