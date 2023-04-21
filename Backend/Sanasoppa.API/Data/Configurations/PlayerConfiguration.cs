@@ -10,6 +10,10 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).ValueGeneratedOnAdd();
 
+        builder.Property(p => p.IsHost)
+            .HasDefaultValue(false)
+            .IsRequired();
+
         builder.Property(e => e.Username).IsRequired();
 
         builder.HasIndex(e => e.ConnectionId)

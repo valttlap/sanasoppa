@@ -100,10 +100,13 @@ public class GameHub : Hub
 
         if (otherOnlinePlayers.Any())
         {
-            if (game.HostId == player.Id)
+            if (game.Id == player.GameId && player.IsHost)
             {
-                game.HostId = otherOnlinePlayers.First().Id;
-                _uow.GameRepository.Update(game);
+                player.IsHost = false;
+                _uow.PlayerRepository.Update(player);
+                var newHost = otherOnlinePlayers.First();
+                newHost.IsHost = true;
+                _uow.PlayerRepository.Update(newHost);
             }
         }
         else
@@ -148,7 +151,7 @@ public class GameHub : Hub
 
         if (await _uow.Complete())
         {
-            var dasher = await _uow.PlayerRepository.GetPlayerAsync(game.HostId);
+            var dasher = await _uow.PlayerRepository.GetPlayerAsync(game.Host!.Id);
             var gameStartedTask = Clients.GroupExcept(gameName, dasher!.ConnectionId).SendAsync("WaitDasher", dasher.Username);
             var startRoundTask = Clients.Client(dasher.ConnectionId).SendAsync("StartRound");
             Task.WaitAll(gameStartedTask, startRoundTask);
@@ -165,21 +168,24 @@ public class GameHub : Hub
 
         var (game, player) = await GetGameAndPlayer(Context.ConnectionId);
 
-        if (game.CurrentRoundId == null)
+        if (game.CurrentRound == null)
         {
-            if (game.HostId != player.Id)
+            if (game.Host?.Id != player.Id)
             {
                 throw new ArgumentException("Only host can start the first round");
             }
 
-            game.CurrentRound = new Round
+            var round = new Round
             {
                 Game = game,
                 GameId = game.Id,
+                IsCurrent = true,
                 Word = word,
                 Dasher = player,
                 DasherId = player.Id
             };
+
+            _uow.RoundRepository.AddRound(round);
         }
         else
         {
@@ -193,14 +199,21 @@ public class GameHub : Hub
             var nextDasherIndex = (dasherIndex + 1) % players.Count;
             var nextDasher = players[nextDasherIndex];
 
-            game.CurrentRound = new Round
+            game.CurrentRound.IsCurrent = false;
+            _uow.RoundRepository.Update(game.CurrentRound);
+
+
+            var round = new Round
             {
                 Game = game,
+                IsCurrent = true,
                 GameId = game.Id,
                 Word = word,
                 Dasher = nextDasher,
                 DasherId = nextDasher.Id
             };
+
+            _uow.RoundRepository.AddRound(round);
         }
 
         game.GameState = GameState.GivingExplanations;
@@ -305,7 +318,8 @@ public class GameHub : Hub
     {
         var (game, _) = await GetGameAndPlayer(Context.ConnectionId);
         await CalculatePoints(game.CurrentRound!);
-        game.CurrentRound = null;
+        game.CurrentRound!.IsCurrent = false;
+        _uow.RoundRepository.Update(game.CurrentRound!);
         game.GameState = GameState.WaitingDasher;
         _uow.GameRepository.Update(game);
         var nextDasher = GetNextDasher(game);
@@ -348,7 +362,7 @@ public class GameHub : Hub
         Player nextDasher;
         if (game.CurrentRound == null)
         {
-            nextDasher = game.Host;
+            nextDasher = game.Host!;
         }
         else
         {

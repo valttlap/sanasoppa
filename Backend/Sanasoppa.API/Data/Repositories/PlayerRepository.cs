@@ -50,7 +50,7 @@ public class PlayerRepository : IPlayerRepository
             throw new ArgumentNullException(nameof(player));
         }
 
-        return await _context.Games.Include(g => g.CurrentRound).Where(g => g.Id == player.GameId).FirstOrDefaultAsync();
+        return await _context.Games.Include(g => g.Rounds).Where(g => g.Id == player.GameId).FirstOrDefaultAsync();
     }
 
     public async Task<IEnumerable<Player>> GetPlayersNotInGameAsync()

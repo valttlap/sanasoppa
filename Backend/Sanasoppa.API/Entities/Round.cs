@@ -7,6 +7,7 @@ public class Round
         Votes = new List<Vote>();
     }
     public int Id { get; set; }
+    public bool IsCurrent { get; set; }
     public int DasherId { get; set; }
     public string Word { get; set; } = default!;
     public int GameId { get; set; }

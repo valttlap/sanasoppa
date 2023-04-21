@@ -84,6 +84,25 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         return true;
     }
 
+    public async Task<bool> ValidateRefreshTokenAsync(RefreshToken refreshToken)
+    {
+        refreshToken.Token = hashToken(refreshToken.Token);
+        var token = await _context.RefreshTokens
+            .FirstOrDefaultAsync(x => x.Token == refreshToken.Token && x.UserId == refreshToken.UserId && x.ClientId == refreshToken.ClientId)
+            .ConfigureAwait(false);
+        if (token == null)
+        {
+            return false;
+        }
+        var isValid = !token.IsExpired && !token.Revoked;
+        if (!isValid)
+        {
+            await RevokeRefreshTokenAsync(token).ConfigureAwait(false);
+            return false;
+        }
+        return true;
+    }
+
     private string hashToken(string token)
     {
         return Convert.ToBase64String(

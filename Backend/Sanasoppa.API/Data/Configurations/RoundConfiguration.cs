@@ -10,6 +10,10 @@ public class RoundConfiguration : IEntityTypeConfiguration<Round>
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).ValueGeneratedOnAdd();
 
+        builder.Property(e => e.IsCurrent)
+            .HasDefaultValue(false)
+            .IsRequired();
+
         builder.Property(e => e.Word).IsRequired();
 
         builder.HasOne(r => r.Dasher)
@@ -25,6 +29,10 @@ public class RoundConfiguration : IEntityTypeConfiguration<Round>
         builder.HasMany(r => r.Votes)
             .WithOne(v => v.Round)
             .HasForeignKey(v => v.RoundId)
+            .OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(r => r.Game)
+            .WithMany(g => g.Rounds)
+            .HasForeignKey(r => r.GameId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

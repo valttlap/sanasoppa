@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Sanasoppa.API.Data;
 using Sanasoppa.API.Entities;
-using Sanasoppa.API.Helpers;
+using Sanasoppa.API.Interfaces;
 using System.Text;
 
 namespace Sanasoppa.API.Extensions;
@@ -51,6 +51,8 @@ public static class IdentityServiceExtensions
                     ValidateAudience = false
                 };
 
+                options.SaveToken = true;
+
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
@@ -64,7 +66,25 @@ public static class IdentityServiceExtensions
                         }
 
                         return Task.CompletedTask;
-                    }
+                    },
+                    /* OnAuthenticationFailed = context =>
+                    {
+                        RefreshToken refreshToken = context.HttpContext.Request.Cookies["refreshToken"];
+                        if (!string.IsNullOrEmpty(refreshToken))
+                        {
+                            var tokenService = context.HttpContext.RequestServices.GetRequiredService<ITokenService>();
+                            try 
+                            {
+                                var (newAccessToken, newRefreshToken) = tokenService.RefreshToken(refreshToken);
+                                context.Response.Headers.Add("Authorization", "Bearer " + newAccessToken);
+                                context.Response.Cookies.Append("refreshToken", newRefreshToken);
+                            }
+                            catch (SecurityTokenException)
+                            {
+                                context.Fail("Unauthorized");
+                            }
+                        }
+                    } */
                 };
             });
 

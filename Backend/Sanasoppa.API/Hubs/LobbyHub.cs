@@ -39,13 +39,14 @@ public class LobbyHub : Hub
             player = new Player
             {
                 ConnectionId = Context.ConnectionId,
-                Username = Context.User!.GetUsername()!
+                Username = Context.User!.GetUsername()!,
+                IsHost = true,
+                IsOnline = true
             };
             _uow.PlayerRepository.AddPlayer(player);
             await _uow.Complete();
         }
         game.Players.Add(player);
-        game.HostId = player.Id;
         _uow.GameRepository.AddGame(game);
         if (!await _uow.Complete())
         {

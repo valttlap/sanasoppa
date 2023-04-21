@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Npgsql.Internal;
 using Sanasoppa.API.Entities;
 using Sanasoppa.API.Interfaces;
 using Sanasoppa.API.Models.Configs;
@@ -18,13 +17,19 @@ public class TokenService : ITokenService
     private readonly UserManager<AppUser> _userManager;
     private readonly SymmetricSecurityKey _key;
     private readonly JwtSettings _jwtSettings;
+    private readonly IUnitOfWork _uow;
 
-    public TokenService(IOptions<JwtSettings> jwtSettings, UserManager<AppUser> userManager)
+    public TokenService(
+        IOptions<JwtSettings> jwtSettings,
+        UserManager<AppUser> userManager,
+        IUnitOfWork uow
+        )
     {
         _jwtSettings = jwtSettings.Value;
         _userManager = userManager;
         _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
             _jwtSettings.SecretKey ?? throw new Exception("Tokenkey not found")));
+        _uow = uow;
     }
 
     public async Task<(string AccessToken, RefreshToken RefreshToken)> CreateToken(AppUser user, string clientId)
@@ -60,6 +65,16 @@ public class TokenService : ITokenService
         var refreshToken = GenerateRefreshToken(user, clientId);
 
         return (accessToken, refreshToken);
+    }
+
+    public async Task<(string AccessToken, RefreshToken RefreshToken)> RefreshToken(RefreshToken refreshToken)
+    {
+        if (!await _uow.RefreshTokenRepository.ValidateRefreshTokenAsync(refreshToken))
+        {
+            throw new SecurityTokenException("Invalid refresh token");
+        }
+        await _uow.RefreshTokenRepository.RevokeRefreshTokenAsync(refreshToken);
+        return await CreateToken(refreshToken.User, refreshToken.ClientId);
     }
 
     private RefreshToken GenerateRefreshToken(AppUser user, string clientId)

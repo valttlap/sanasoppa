@@ -5,6 +5,7 @@ public class Player
     public string ConnectionId { get; set; } = default!;
     public string Username { get; set; } = default!;
     public bool IsOnline { get; set; }
+    public bool IsHost { get; set; }
     public int TotalPoints { get; set; }
     public int? GameId { get; set; }
     public Game? Game { get; set; }
