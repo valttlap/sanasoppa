@@ -20,11 +20,11 @@ jobs:
       with:
         dotnet-version: 7.0.x
     - name: Restore dependencies
-      run: dotnet restore backend/Sanasoppa.sln
+      run: dotnet restore Backend/Sanasoppa.sln
     - name: Build
-      run: dotnet build backend/Sanasoppa.sln --no-restore
+      run: dotnet build Backend/Sanasoppa.sln --no-restore
     - name: Test with coverage
-      run: dotnet test backend/Sanasoppa.sln --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger:"console;verbosity=detailed" --results-directory /tmp/test-results/
+      run: dotnet test Backend/Sanasoppa.sln --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger:"console;verbosity=detailed" --results-directory /tmp/test-results/
     - name: Install DeepSource CLI
       run: curl https://deepsource.io/cli | sh
     - name: Set DEEPSOURCE_DSN env variable
