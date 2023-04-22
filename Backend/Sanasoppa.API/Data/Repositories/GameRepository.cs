@@ -53,7 +53,7 @@ public class GameRepository : IGameRepository
         return await _context.Games.AnyAsync(g => g.Name == gameName);
     }
 
-    public async Task<Player?> GetDasher(Game game)
+    public async Task<Player?> GetDasherAsync(Game game)
     {
         var round = await _context.Rounds
             .Include(r => r.Dasher)
@@ -122,7 +122,7 @@ public class GameRepository : IGameRepository
             .SingleOrDefaultAsync();
     }
 
-    public bool HasGameEndedAsync(Game game)
+    public bool HasGameEnded(Game game)
     {
         return game.Players.Any(p => p.TotalPoints >= 20);
     }
