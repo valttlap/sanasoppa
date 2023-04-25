@@ -48,7 +48,7 @@ public class GameRepositoryTests
         }
 
         await _context!.Database.EnsureDeletedAsync();
-        
+
         _context!.Dispose();
     }
 
@@ -119,7 +119,8 @@ public class GameRepositoryTests
     {
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
-        var player = new Player {
+        var player = new Player
+        {
             Username = _faker.Internet.UserName(),
             ConnectionId = _faker.Random.Uuid().ToString(),
             IsHost = true,
@@ -149,7 +150,8 @@ public class GameRepositoryTests
     {
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
-        var player = new Player {
+        var player = new Player
+        {
             Username = _faker.Internet.UserName(),
             ConnectionId = _faker.Random.Uuid().ToString(),
             IsHost = true,
@@ -179,7 +181,8 @@ public class GameRepositoryTests
     {
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
-        var player = new Player {
+        var player = new Player
+        {
             Username = _faker.Internet.UserName(),
             ConnectionId = _faker.Random.Uuid().ToString(),
             IsHost = true,
@@ -219,7 +222,8 @@ public class GameRepositoryTests
     {
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
-        var player = new Player {
+        var player = new Player
+        {
             Username = _faker.Internet.UserName(),
             ConnectionId = _faker.Random.Uuid().ToString(),
             IsHost = true,
@@ -262,7 +266,8 @@ public class GameRepositoryTests
         var game2 = new Game { Name = _faker.Lorem.Word(), GameState = GameState.GivingExplanations };
         var game3 = new Game { Name = _faker.Lorem.Word(), GameState = GameState.DasherValuingExplanations };
 
-        var player = new Player {
+        var player = new Player
+        {
             Username = _faker.Internet.UserName(),
             ConnectionId = _faker.Random.Uuid().ToString(),
             IsHost = true,
@@ -290,14 +295,16 @@ public class GameRepositoryTests
     {
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
-        var player = new Player {
+        var player = new Player
+        {
             Username = _faker.Internet.UserName(),
             ConnectionId = _faker.Random.Uuid().ToString(),
             IsHost = true,
             IsOnline = true,
             TotalPoints = 0
         };
-        var player2 = new Player {
+        var player2 = new Player
+        {
             Username = _faker.Internet.UserName(),
             ConnectionId = _faker.Random.Uuid().ToString(),
             IsHost = true,
@@ -368,7 +375,7 @@ public class GameRepositoryTests
             Name = _faker.Lorem.Word(),
             GameState = GameState.NotStarted
         };
-        
+
         // Act
         _repository!.AddGame(game);
         await _context!.SaveChangesAsync();
@@ -402,7 +409,7 @@ public class GameRepositoryTests
         };
         _context!.Games.Add(game);
         await _context!.SaveChangesAsync();
-        
+
         // Act
         _repository!.AddPlayerToGame(game, player);
         await _context!.SaveChangesAsync();
@@ -444,7 +451,7 @@ public class GameRepositoryTests
         // Assert
         Assert.That(result, Is.True);
     }
-    
+
     [Test]
     public async Task HasGameEnded_ShouldReturnFalseForNotEndedGame()
     {
@@ -494,7 +501,7 @@ public class GameRepositoryTests
         _context!.Games.Add(game);
         _context!.Players.Add(player);
         await _context!.SaveChangesAsync();
-        
+
         // Act
         await _repository!.AddPlayerToGameAsync(game, player.Username);
         await _context!.SaveChangesAsync();
@@ -513,7 +520,8 @@ public class GameRepositoryTests
     {
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
-        var player = new Player {
+        var player = new Player
+        {
             Username = _faker.Internet.UserName(),
             ConnectionId = _faker.Random.Uuid().ToString(),
             IsHost = true,
