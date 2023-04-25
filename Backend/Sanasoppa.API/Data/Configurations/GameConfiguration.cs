@@ -10,10 +10,6 @@ public class GameConfiguration : IEntityTypeConfiguration<Game>
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).ValueGeneratedOnAdd();
 
-        builder.Property(e => e.HasStarted)
-            .HasDefaultValue(false)
-            .IsRequired();
-
         builder.HasMany(g => g.Players)
             .WithOne(p => p.Game)
             .HasForeignKey(p => p.GameId)

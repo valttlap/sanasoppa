@@ -57,7 +57,6 @@ public class PlayerRepositoryTests
         // Arrange
         using (var context = new DataContext(_options!))
         {
-            var repository = new PlayerRepository(context);
             context.Players.Add(_player1!);
             await context.SaveChangesAsync();
         }

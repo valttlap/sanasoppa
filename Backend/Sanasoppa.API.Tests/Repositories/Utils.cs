@@ -9,6 +9,7 @@ public static class RepostitoryTestUtils
     {
         return new DbContextOptionsBuilder<DataContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .EnableSensitiveDataLogging()
             .Options;
     }
 }
