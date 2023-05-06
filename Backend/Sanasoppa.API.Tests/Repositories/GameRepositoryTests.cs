@@ -26,7 +26,6 @@ public class GameRepositoryTests
         _context = new DataContext(_options!);
         _mapper = ConfigureMapper();
         _repository = new GameRepository(_context, _mapper);
-
     }
 
     private IMapper ConfigureMapper()
