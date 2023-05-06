@@ -25,10 +25,10 @@ public class GameRepository : IGameRepository
     public void AddPlayerToGame(Game game, Player player)
     {
         if (game.Players.Any(p => p.Id == player.Id)) return;
-
         game.Players.Add(player);
         Update(game);
     }
+
 
     public async Task AddPlayerToGameAsync(Game game, string playerName)
     {
@@ -53,7 +53,7 @@ public class GameRepository : IGameRepository
         return await _context.Games.AnyAsync(g => g.Name == gameName);
     }
 
-    public async Task<Player?> GetDasher(Game game)
+    public async Task<Player?> GetDasherAsync(Game game)
     {
         var round = await _context.Rounds
             .Include(r => r.Dasher)
@@ -81,7 +81,6 @@ public class GameRepository : IGameRepository
     {
         return await _context.Games
             .Include(g => g.Players)
-            .Include(g => g.Host)
             .Where(g => g.Id == id)
             .SingleOrDefaultAsync();
     }
@@ -98,7 +97,7 @@ public class GameRepository : IGameRepository
     {
         return await _context.Games
             .Include(g => g.Players)
-            .Where(g => !g.HasStarted)
+            .Where(g => g.GameState == GameState.NotStarted)
             .ProjectTo<GameDto>(_mapper.ConfigurationProvider)
             .ToListAsync();
     }
@@ -107,8 +106,7 @@ public class GameRepository : IGameRepository
     {
         return await _context.Games
             .Include(g => g.Players)
-            .Include(g => g.Host)
-            .Include(g => g.CurrentRound)
+            .Include(g => g.Rounds)
             .Where(g => g.Id == id)
             .SingleOrDefaultAsync();
     }
@@ -117,12 +115,12 @@ public class GameRepository : IGameRepository
     {
         return await _context.Games
             .Include(g => g.Players)
-            .Include(g => g.CurrentRound)
+            .Include(g => g.Rounds)
             .Where(g => g.Name == gameName)
             .SingleOrDefaultAsync();
     }
 
-    public bool HasGameEndedAsync(Game game)
+    public bool HasGameEnded(Game game)
     {
         return game.Players.Any(p => p.TotalPoints >= 20);
     }
@@ -145,7 +143,6 @@ public class GameRepository : IGameRepository
 
     public void StartGame(Game game)
     {
-        game.HasStarted = true;
         game.GameState = GameState.WaitingDasher;
         Update(game);
     }

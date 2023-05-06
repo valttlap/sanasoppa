@@ -8,7 +8,7 @@ public class Game
     }
     public int Id { get; set; }
     public string Name { get; set; } = default!;
-    public bool HasStarted { get; set; }
+    public bool HasStarted => GameState != GameState.NotStarted;
     public GameState GameState { get; set; }
     public Round? CurrentRound => Rounds.FirstOrDefault(r => r.IsCurrent);
     public Player? Host => Players.FirstOrDefault(p => p.IsHost);

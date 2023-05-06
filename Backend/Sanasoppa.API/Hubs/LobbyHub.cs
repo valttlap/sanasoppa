@@ -29,7 +29,6 @@ public class LobbyHub : Hub
         var game = new Game
         {
             Name = gameName,
-            HasStarted = false,
             GameState = GameState.NotStarted,
         };
 

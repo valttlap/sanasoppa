@@ -1,6 +1,6 @@
 namespace Sanasoppa.API.Errors;
 
-public class ApiException: Exception
+public class ApiException : Exception
 {
     public ApiException(int statusCode, string message)
     {

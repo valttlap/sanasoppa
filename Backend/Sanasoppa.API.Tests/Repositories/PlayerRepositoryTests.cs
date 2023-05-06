@@ -16,17 +16,10 @@ public class PlayerRepositoryTests
     private Round? _round1;
     private Round? _round2;
 
-    private DbContextOptions<DataContext> CreateNewContextOptions()
-    {
-        return new DbContextOptionsBuilder<DataContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-    }
-
     [SetUp]
     public void Setup()
     {
-        _options = CreateNewContextOptions();
+        _options = RepostitoryTestUtils.CreateNewContextOptions();
         _player1 = new Player { Id = 1, ConnectionId = "123", Username = "Test Player" };
         _player2 = new Player { Id = 2, ConnectionId = "456", Username = "Test Player 2" };
         _game1 = new Game { Id = 1, Name = "Test Game" };
@@ -64,7 +57,6 @@ public class PlayerRepositoryTests
         // Arrange
         using (var context = new DataContext(_options!))
         {
-            var repository = new PlayerRepository(context);
             context.Players.Add(_player1!);
             await context.SaveChangesAsync();
         }

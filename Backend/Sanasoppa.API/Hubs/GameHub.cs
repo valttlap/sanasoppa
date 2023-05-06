@@ -246,7 +246,7 @@ public class GameHub : Hub
             await Clients.Group(game.Name).SendAsync("ExplanationGiven", player);
             if (game.CurrentRound!.Explanations.Count == game.Players.Count)
             {
-                var dasher = await _uow.GameRepository.GetDasher(game);
+                var dasher = await _uow.GameRepository.GetDasherAsync(game);
                 var round = await _uow.RoundRepository.GetRoundWithExplanationsAsync(game.CurrentRound.Id);
                 var playersTask = Clients.GroupExcept(game.Name, dasher!.ConnectionId).SendAsync("AllExplanationsGiven");
                 var dasherTask = Clients.Client(dasher!.ConnectionId).SendAsync("HandleExplanations", _mapper.Map<ICollection<ExplanationDto>>(round!.Explanations));

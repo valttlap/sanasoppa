@@ -49,6 +49,7 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         return await _context.SaveChangesAsync().ConfigureAwait(false) > 0;
     }
 
+    // TODO: This method should probably be removed
     public async Task<bool> RevokeRefreshTokenAsync(RefreshToken refreshToken)
     {
         if (refreshToken == null)
@@ -84,6 +85,8 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         return true;
     }
 
+
+    // TODO: This method should probably be removed
     public async Task<bool> ValidateRefreshTokenAsync(RefreshToken refreshToken)
     {
         refreshToken.Token = hashToken(refreshToken.Token);
