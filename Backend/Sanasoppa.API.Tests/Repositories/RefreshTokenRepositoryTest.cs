@@ -11,7 +11,7 @@ namespace Sanasoppa.API.Tests.Repositories
     {
         private DataContext? _context;
         private RefreshTokenRepository? _repository;
-        private Faker _faker = new Faker();
+        private Faker _faker = new();
 
         [SetUp]
         public void Setup()

@@ -17,7 +17,7 @@ public class GameRepositoryTests
     private DataContext? _context;
     private IGameRepository? _repository;
     private IMapper? _mapper;
-    private Faker _faker = new Faker("fi");
+    private Faker _faker = new("fi");
 
     [SetUp]
     public void Setup()
