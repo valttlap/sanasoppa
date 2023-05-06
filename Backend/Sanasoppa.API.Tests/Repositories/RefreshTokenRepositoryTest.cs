@@ -204,7 +204,7 @@ namespace Sanasoppa.API.Tests.Repositories
         [Test]
         public async Task RevokeRefreshTokenAsyncByTokenStringAsync()
         {
-           // Arrange
+            // Arrange
             var user = new AppUser
             {
                 Email = _faker.Internet.Email(),
