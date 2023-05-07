@@ -12,7 +12,6 @@ import { ErrorComponent } from './components/error/error.component';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ListComponent } from './game/list/list.component';
 import { NotFoundComponent } from './errors/not-found/not-found.component';
-import { HomeComponent } from './home/home.component';
 import { CreateComponent } from './game/create/create.component';
 import { ServerErrorComponent } from './errors/server-error/server-error.component';
 import { ErrorInterceptor } from './_interceptors/error.interceptor';
@@ -31,7 +30,6 @@ import { environment as env } from '../environments/environment';
     ErrorComponent,
     ListComponent,
     NotFoundComponent,
-    HomeComponent,
     CreateComponent,
     ServerErrorComponent,
     AuthButtonComponent,

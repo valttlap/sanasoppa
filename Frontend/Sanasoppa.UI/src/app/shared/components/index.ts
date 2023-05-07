@@ -1,2 +1,3 @@
 import { NAVIGATION_COMPONENTS } from './navigation';
-export const COMPONENTS = [...NAVIGATION_COMPONENTS];
+import { PageLayoutComponent } from './page-layout.component';
+export const COMPONENTS = [...NAVIGATION_COMPONENTS, PageLayoutComponent];

@@ -5,6 +5,8 @@ import { LoginButtonComponent } from './components/buttons/login-button.componen
 import { LogoutButtonComponent } from './components/buttons/logout-button.component';
 import { RouterModule } from '@angular/router';
 import { COMPONENTS } from './components';
+import { PageLayoutComponent } from './components/page-layout.component';
+import { PageFooterComponent } from './components/page-footer.component';
 
 @NgModule({
   declarations: [
@@ -12,6 +14,8 @@ import { COMPONENTS } from './components';
     LoginButtonComponent,
     LogoutButtonComponent,
     ...COMPONENTS,
+    PageLayoutComponent,
+    PageFooterComponent,
   ],
   imports: [CommonModule, RouterModule],
   exports: [...COMPONENTS],
