@@ -9,7 +9,6 @@ public static class ApplicationServiceExtension
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration config)
     {
         services.AddCors();
-        services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IReCaptchaService, ReCaptchaService>();
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

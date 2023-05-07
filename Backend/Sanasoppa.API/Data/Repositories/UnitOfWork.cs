@@ -23,7 +23,6 @@ public class UnitOfWork : IUnitOfWork
     public IRoundRepository RoundRepository => new RoundRepository(_context);
     public IExplanationRepository ExplanationRepository => new ExplanationRepository(_context);
     public IVoteRepository VoteRepository => new VoteRepository(_context);
-    public IRefreshTokenRepository RefreshTokenRepository => new RefreshTokenRepository(_context);
 
 
 

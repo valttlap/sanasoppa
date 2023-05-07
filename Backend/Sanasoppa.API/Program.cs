@@ -53,11 +53,7 @@ var services = scope.ServiceProvider;
 try
 {
     var context = services.GetRequiredService<DataContext>();
-    var userManager = services.GetRequiredService<UserManager<AppUser>>();
-    var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
-    var environment = services.GetRequiredService<IWebHostEnvironment>();
     await context.Database.MigrateAsync();
-    await Seed.SeedDefaultUserAsync(userManager, roleManager, environment.IsDevelopment());
 }
 catch (Exception ex)
 {

@@ -9,7 +9,6 @@ public interface IUnitOfWork
     IRoundRepository RoundRepository { get; }
     IExplanationRepository ExplanationRepository { get; }
     IVoteRepository VoteRepository { get; }
-    IRefreshTokenRepository RefreshTokenRepository { get; }
 
     /// <summary>
     /// Saves all changes made in this context to the database.

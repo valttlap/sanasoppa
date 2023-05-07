@@ -36,10 +36,5 @@ public class AutoMapperProfiles : Profile
                 Name = p.Username,
                 IsHost = p.IsHost
             }).ToList());
-        CreateMap<RegisterDto, AppUser>()
-            .ForMember(dest => dest.UserName,
-                opt => opt.MapFrom(src => src.Username))
-            .ForMember(dest => dest.Email,
-                opt => opt.MapFrom(src => src.Email));
     }
 }

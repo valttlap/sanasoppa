@@ -5,9 +5,7 @@ using Sanasoppa.API.Data.Configurations;
 using Sanasoppa.API.Entities;
 
 namespace Sanasoppa.API.Data;
-public class DataContext : IdentityDbContext<AppUser, AppRole, int,
-    IdentityUserClaim<int>, AppUserRole, IdentityUserLogin<int>,
-    IdentityRoleClaim<int>, IdentityUserToken<int>>
+public class DataContext : DbContext
 {
     public DataContext(DbContextOptions<DataContext> options)
         : base(options)
@@ -17,7 +15,6 @@ public class DataContext : IdentityDbContext<AppUser, AppRole, int,
     public DbSet<Round> Rounds { get; set; } = default!;
     public DbSet<Explanation> Explanations { get; set; } = default!;
     public DbSet<Vote> Votes { get; set; } = default!;
-    public DbSet<RefreshToken> RefreshTokens { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -26,8 +23,6 @@ public class DataContext : IdentityDbContext<AppUser, AppRole, int,
         builder.ApplyConfiguration(new RoundConfiguration());
         builder.ApplyConfiguration(new ExplanationConfiguration());
         builder.ApplyConfiguration(new PlayerConfiguration());
-        builder.ApplyConfiguration(new AppRoleConfiguration());
-        builder.ApplyConfiguration(new AppUserConfiguration());
         builder.ApplyConfiguration(new VoteConfiguration());
     }
 }
