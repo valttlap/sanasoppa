@@ -1,8 +1,9 @@
+import { AuthService } from '@auth0/auth0-angular';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { ReCaptchaV3Service } from 'ng-recaptcha';
 import { ILogin } from '../_models/ILogin';
-import { AccountService } from '../_services/account.service';
+import { GameHubService } from '../_services/gamehub.service';
 
 @Component({
   selector: 'app-home',
@@ -15,25 +16,12 @@ export class HomeComponent {
 
   constructor(
     private router: Router,
-    public accountService: AccountService,
-    private recaptchaV3Service: ReCaptchaV3Service
+    public auth: AuthService,
+    private recaptchaV3Service: ReCaptchaV3Service,
+    private game: GameHubService
   ) {}
 
-  login() {
-    if (!this.model) return;
-    this.recaptchaV3Service.execute('login').subscribe((token: string) => {
-      console.log(token);
-    });
-
-    this.accountService.login(this.model).subscribe({
-      next: () => {
-        this.model = { username: '', password: '' };
-      },
-    });
-  }
-
-  logout() {
-    this.accountService.logout();
-    this.router.navigateByUrl('/');
+  getGames(): void {
+    this.game.getNotStartedGames().subscribe();
   }
 }

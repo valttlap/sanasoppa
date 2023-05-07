@@ -2,11 +2,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { GameHubService } from 'src/app/_services/gamehub.service';
 import { HubConnection } from '@microsoft/signalr';
-import { User } from 'src/app/_models/user';
-import { AccountService } from 'src/app/_services/account.service';
 import { take } from 'rxjs';
 import { IPlayer } from 'src/app/_models/IPlayer';
 import { Game } from 'src/app/_models/game';
+import { AuthService, User } from '@auth0/auth0-angular';
 
 @Component({
   selector: 'app-lobby',
@@ -23,9 +22,9 @@ export class LobbyComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private gameHubService: GameHubService,
-    private accountService: AccountService
+    private auth: AuthService
   ) {
-    this.accountService.currentUser$.pipe(take(1)).subscribe({
+    this.auth.user$.pipe(take(1)).subscribe({
       next: user => {
         if (user) this.user = user;
       },

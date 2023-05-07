@@ -1,41 +1,16 @@
 <div class="welcome-base">
   <div class="wrapper-welcome">
     <h1>SanaSoppa</h1>
-    <h2 *ngIf="accountService.currentUser$ | async as user">
-      Hei {{ user.username }}!
+    <app-auth-button></app-auth-button>
+    <h2 *ngIf="auth.user$ | async as user">
+      Hei {{ user.preferred_username }}!
     </h2>
     <button
-      *ngIf="accountService.currentUser$ | async"
+      *ngIf="auth.user$ | async"
       class="btn btn-primary"
-      routerLink="/list">
+      (click)="getGames()">
       Siirry pelilistaukseen
     </button>
-    <button
-      *ngIf="accountService.currentUser$ | async"
-      class="btn btn-danger"
-      (click)="logout()">
-      Kirjaudu ulos
-    </button>
-    <form
-      *ngIf="(accountService.currentUser$ | async) === null"
-      #loginForm="ngForm"
-      class="d-flex"
-      (ngSubmit)="login()"
-      autocomplete="off">
-      <input
-        type="text"
-        name="username"
-        [(ngModel)]="model!.username"
-        class="form-control me-2"
-        placeholder="Käyttäjänimi" />
-      <input
-        type="password"
-        name="password"
-        [(ngModel)]="model!.password"
-        class="form-control me-2"
-        placeholder="Salasana" />
-      <button type="submit" class="btn btn-success">Kirjaudu</button>
-    </form>
     <div>{{ token }}</div>
   </div>
 </div>

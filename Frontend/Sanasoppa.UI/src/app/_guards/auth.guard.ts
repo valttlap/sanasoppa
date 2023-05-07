@@ -1,15 +1,15 @@
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { AccountService } from '../_services/account.service';
+import { AuthService } from '@auth0/auth0-angular';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthGuard {
-  constructor(private accountService: AccountService) {}
+  constructor(private auth: AuthService) {}
 
   canActivate(): Observable<boolean> {
-    return this.accountService.currentUser$.pipe(
+    return this.auth.isAuthenticated$.pipe(
       map(user => {
         if (user) return true;
         else {

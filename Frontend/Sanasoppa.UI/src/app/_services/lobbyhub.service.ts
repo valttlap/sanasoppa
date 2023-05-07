@@ -1,6 +1,6 @@
 import { BusyService } from './busy.service';
-import { User } from './../_models/user';
 import { Injectable } from '@angular/core';
+import { User } from '@auth0/auth0-angular';
 import {
   HttpTransportType,
   HubConnection,
@@ -13,12 +13,13 @@ import { environment } from 'src/environments/environment';
 })
 export class LobbyHubService {
   private hubConnection?: HubConnection;
-  private hubUrl = environment.hubUrl;
+  private hubUrl = environment.api.hubUrl;
 
   constructor(private busyService: BusyService) {}
 
   startConnection(user: User) {
-    this.busyService.busy();
+    //TODO: FIX AUTHENTICATION
+    /*     this.busyService.busy();
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(`${this.hubUrl}/lobbyhub`, {
         accessTokenFactory: () => user.token,
@@ -30,7 +31,7 @@ export class LobbyHubService {
     this.hubConnection
       .start()
       .catch(err => console.error(err))
-      .finally(() => this.busyService.idle());
+      .finally(() => this.busyService.idle()); */
   }
 
   getHubConnection(): HubConnection {
