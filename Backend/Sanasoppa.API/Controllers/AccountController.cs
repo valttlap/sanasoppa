@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Text.Json;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -65,12 +66,20 @@ public class AccountController : BaseApiController
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var emailResult = await _emailService.SendConfirmationEmailAsync(user.Email, token);
 
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Expires = newTokens.RefreshToken.Expires
+            // TODO: Add rest of cookie options
+        };
+
+        var refreshTokenJson = JsonSerializer.Serialize(newTokens.RefreshToken);
+        Response.Cookies.Append("refreshToken", refreshTokenJson, cookieOptions);
+
         return new UserDto
         {
             Username = user.UserName,
-            Token = newTokens.AccessToken,
-            RefreshToken = newTokens.RefreshToken.Token,
-            RefreshTokenExpiration = newTokens.RefreshToken.Expires,
+            Token = newTokens.AccessToken
         };
     }
 
@@ -172,12 +181,21 @@ public class AccountController : BaseApiController
 
         var newTokens = await _tokenService.CreateToken(user, loginDto.ClientId);
 
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Expires = newTokens.RefreshToken.Expires
+            // TODO: Add rest of cookie options
+        };
+
+        var refreshTokenJson = JsonSerializer.Serialize(newTokens.RefreshToken);
+        Response.Cookies.Append("refreshToken", refreshTokenJson, cookieOptions);
+
+
         return new UserDto
         {
             Username = user.UserName!,
             Token = newTokens.AccessToken,
-            RefreshToken = newTokens.RefreshToken.Token,
-            RefreshTokenExpiration = newTokens.RefreshToken.Expires,
         };
     }
 

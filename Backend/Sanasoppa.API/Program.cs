@@ -42,6 +42,7 @@ if (builder.Environment.IsDevelopment())
 }
 
 app.UseAuthentication();
+app.UseMiddleware<TokenRefreshMiddleware>();
 app.UseAuthorization();
 
 
