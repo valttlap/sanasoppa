@@ -1,12 +1,8 @@
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Sanasoppa.API.Data;
-using Sanasoppa.API.Entities;
 using Sanasoppa.API.Extensions;
 using Sanasoppa.API.Hubs;
-using Sanasoppa.API.Middleware;
 
 Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
 
@@ -33,36 +29,10 @@ builder.Services.AddDbContext<DataContext>(opt =>
 
 var app = builder.Build();
 
-app.UseMiddleware<ExceptionMiddleware>();
 
-if (builder.Environment.IsDevelopment())
-{
-    app.UseCors(builder => builder
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowCredentials()
-        .WithOrigins("https://localhost:4200"));
-}
-
-app.Use(async (context, next) =>
-{
-    if (context.Request.Headers.ContainsKey("Authorization"))
-    {
-        var token = context.Request.Headers["Authorization"].ToString().Replace("Bearer ", string.Empty);
-        var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
-        var jwtSecurityToken = jwtSecurityTokenHandler.ReadJwtToken(token);
-
-        Console.WriteLine("Token: " + token);
-        Console.WriteLine("Claims:");
-        foreach (var claim in jwtSecurityToken.Claims)
-        {
-            Console.WriteLine(claim.Type + ": " + claim.Value);
-        }
-    }
-
-    await next.Invoke();
-});
-
+app.UseErrorHandler();
+app.UseSecureHeaders();
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
