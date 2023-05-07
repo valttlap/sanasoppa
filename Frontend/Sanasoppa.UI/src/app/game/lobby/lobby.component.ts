@@ -51,7 +51,7 @@ export class LobbyComponent implements OnInit {
       },
     });
     try {
-      this.gameHubService.startConnection(this.user, this.name);
+      this.gameHubService.startConnection(this.name);
       this.gameHub = this.gameHubService.getHubConnection();
     } catch (e) {
       this.router.navigate(['/error', e]);

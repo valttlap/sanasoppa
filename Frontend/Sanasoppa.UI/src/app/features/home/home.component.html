@@ -14,10 +14,7 @@
             : 'Tietoja ei löydy'
         }}!
       </h2>
-      <button
-        *ngIf="user$ | async"
-        class="btn btn-primary"
-        (click)="getGames()">
+      <button *ngIf="user$ | async" class="btn btn-primary" routerLink="/list">
         Siirry pelilistaukseen
       </button>
     </div>

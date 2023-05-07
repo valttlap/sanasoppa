@@ -7,7 +7,7 @@ using Sanasoppa.API.Interfaces;
 
 namespace Sanasoppa.API.Hubs;
 
-[Authorize(Policy = "RequireMemberRole")]
+[Authorize]
 public class LobbyHub : Hub
 {
     private readonly IUnitOfWork _uow;

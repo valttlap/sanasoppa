@@ -42,7 +42,7 @@ export class ListComponent implements OnInit, OnDestroy {
       this.router.navigate(['/']);
       return;
     }
-    this.lobbyHubService.startConnection(this.user);
+    this.lobbyHubService.startConnection();
     this.lobbyHub = this.lobbyHubService.getHubConnection();
     this.lobbyHub.on('GameListUpdated', (games: Game[]) =>
       this.updateGames(games)

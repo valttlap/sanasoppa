@@ -8,7 +8,7 @@ import { environment as env } from '../../environments/environment';
 import { BusyService } from './busy.service';
 import { HttpClient } from '@angular/common/http';
 import { Game } from '../_models/game';
-import { Observable } from 'rxjs';
+import { Observable, lastValueFrom } from 'rxjs';
 import { IPlayer } from '../_models/IPlayer';
 import { AuthService, User } from '@auth0/auth0-angular';
 
@@ -26,22 +26,24 @@ export class GameHubService {
     private auth: AuthService
   ) {}
 
-  startConnection(user: User, gameName: string) {
-    // TODO: FIX THE AUTHENTICATION
-    /*     this.busyService.busy();
-    this.hubConnection = new HubConnectionBuilder()
-      .withUrl(`${this.hubUrl}/gamehub?game=${gameName}`, {
-        accessTokenFactory: () =>
-          this.auth.getAccessTokenSilently().subscribe(),
-        transport: HttpTransportType.WebSockets,
-      })
-      .withAutomaticReconnect()
-      .build();
+  async startConnection(gameName: string) {
+    this.busyService.busy();
+    try {
+      const token = await lastValueFrom(this.auth.getAccessTokenSilently());
+      this.hubConnection = new HubConnectionBuilder()
+        .withUrl(`${this.hubUrl}/gamehub?game=${gameName}`, {
+          accessTokenFactory: () => token,
+          transport: HttpTransportType.WebSockets,
+        })
+        .withAutomaticReconnect()
+        .build();
 
-    this.hubConnection
-      .start()
-      .catch(err => console.error(err))
-      .finally(() => this.busyService.idle()); */
+      await this.hubConnection.start();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      this.busyService.idle();
+    }
   }
 
   getHubConnection(): HubConnection {
