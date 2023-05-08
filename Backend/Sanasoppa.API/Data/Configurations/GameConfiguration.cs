@@ -11,7 +11,7 @@ public class GameConfiguration : IEntityTypeConfiguration<Game>
     public void Configure(EntityTypeBuilder<Game> builder)
     {
         builder.HasKey(e => e.Id);
-        builder.Property(e => e.Id).ValueGeneratedOnAdd();
+        builder.Property(e => e.Id).UseIdentityAlwaysColumn();
 
         builder.HasMany(g => g.Players)
             .WithOne(p => p.Game)
@@ -19,8 +19,6 @@ public class GameConfiguration : IEntityTypeConfiguration<Game>
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.Property(g => g.GameState)
-            .HasConversion<int>()
-            .IsRequired()
             .HasDefaultValue(GameState.NotStarted);
 
         builder.HasIndex(g => g.Name)

@@ -20,6 +20,7 @@ public class DataContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.HasPostgresEnum<GameState>();
         modelBuilder.ApplyConfiguration(new GameConfiguration());
         modelBuilder.ApplyConfiguration(new RoundConfiguration());
         modelBuilder.ApplyConfiguration(new ExplanationConfiguration());

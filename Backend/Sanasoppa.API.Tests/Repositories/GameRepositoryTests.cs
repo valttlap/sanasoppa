@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using AutoMapper;
 using Bogus;
 using Microsoft.EntityFrameworkCore;
@@ -37,7 +40,6 @@ public class GameRepositoryTests
         return mapperConfig.CreateMapper();
     }
 
-
     [TearDown]
     public async Task TearDownAsync()
     {
@@ -46,7 +48,7 @@ public class GameRepositoryTests
             entity.State = EntityState.Detached;
         }
 
-        await _context!.Database.EnsureDeletedAsync();
+        await _context!.Database.EnsureDeletedAsync().ConfigureAwait(false);
 
         _context!.Dispose();
     }
@@ -60,11 +62,11 @@ public class GameRepositoryTests
         var game3 = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
 
         _context!.Games.AddRange(game1, game2, game3);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         IEnumerable<Game?> result;
-        result = await _repository!.GetGamesAsync();
+        result = await _repository!.GetGamesAsync().ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -83,11 +85,11 @@ public class GameRepositoryTests
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
-        result = await _repository!.GetGameAsync(1);
+        result = await _repository!.GetGameAsync(1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -105,11 +107,11 @@ public class GameRepositoryTests
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
-        result = await _repository!.GetGameAsync(game.Name);
+        result = await _repository!.GetGameAsync(game.Name).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -136,11 +138,11 @@ public class GameRepositoryTests
         };
         game.Players.Add(player);
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
-        result = await _repository!.GetGameWithPlayersAsync(1);
+        result = await _repository!.GetGameWithPlayersAsync(1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -173,11 +175,11 @@ public class GameRepositoryTests
         };
         game.Players.Add(player);
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
-        result = await _repository!.GetGameWithPlayersAsync(game.Name);
+        result = await _repository!.GetGameWithPlayersAsync(game.Name).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -214,11 +216,11 @@ public class GameRepositoryTests
         game.Players.Add(player);
         game.Rounds.Add(round);
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
-        result = await _repository!.GetWholeGameAsync(1);
+        result = await _repository!.GetWholeGameAsync(1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -261,11 +263,11 @@ public class GameRepositoryTests
         game.Players.Add(player);
         game.Rounds.Add(round);
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
-        result = await _repository!.GetWholeGameAsync(game.Name);
+        result = await _repository!.GetWholeGameAsync(game.Name).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -306,11 +308,11 @@ public class GameRepositoryTests
         game1.Players.Add(player);
 
         _context!.Games.AddRange(game1, game2, game3);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         IEnumerable<GameDto?> result;
-        result = await _repository!.GetNotStartedGamesAsync();
+        result = await _repository!.GetNotStartedGamesAsync().ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -352,11 +354,11 @@ public class GameRepositoryTests
         game.Players.Add(player2);
         game.Rounds.Add(round);
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Player? result;
-        result = await _repository!.GetDasherAsync(game);
+        result = await _repository!.GetDasherAsync(game).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -374,10 +376,10 @@ public class GameRepositoryTests
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
         // Act
         bool result;
-        result = await _repository!.GameExistsAsync(1);
+        result = await _repository!.GameExistsAsync(1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.True);
@@ -389,11 +391,11 @@ public class GameRepositoryTests
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         bool result;
-        result = await _repository!.GameExistsAsync(2);
+        result = await _repository!.GameExistsAsync(2).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.False);
@@ -411,9 +413,9 @@ public class GameRepositoryTests
 
         // Act
         _repository!.AddGame(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
         Game? result;
-        result = await _context!.Games.FindAsync(1);
+        result = await _context!.Games.FindAsync(1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -443,13 +445,13 @@ public class GameRepositoryTests
             TotalPoints = 0
         };
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         _repository!.AddPlayerToGame(game, player);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
         Game? result;
-        result = await _context!.Games.Include(g => g.Players).FirstOrDefaultAsync(g => g.Id == 1);
+        result = await _context!.Games.Include(g => g.Players).FirstOrDefaultAsync(g => g.Id == 1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -480,7 +482,7 @@ public class GameRepositoryTests
         };
         game.Players.Add(player);
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         bool result;
@@ -509,7 +511,7 @@ public class GameRepositoryTests
         };
         game.Players.Add(player);
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         bool result;
@@ -538,13 +540,13 @@ public class GameRepositoryTests
         };
         _context!.Games.Add(game);
         _context!.Players.Add(player);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
-        await _repository!.AddPlayerToGameAsync(game, player.Username);
-        await _context!.SaveChangesAsync();
+        await _repository!.AddPlayerToGameAsync(game, player.Username).ConfigureAwait(false);
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
         Game? result;
-        result = await _context!.Games.Include(g => g.Players).FirstOrDefaultAsync(g => g.Id == 1);
+        result = await _context!.Games.Include(g => g.Players).FirstOrDefaultAsync(g => g.Id == 1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -571,13 +573,13 @@ public class GameRepositoryTests
         };
         game.Players.Add(player);
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
         _repository!.RemovePlayerFromGame(game, player.Username);
-        await _context!.SaveChangesAsync();
-        result = await _context.Games.FindAsync(1);
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
+        result = await _context.Games.FindAsync(1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -596,13 +598,13 @@ public class GameRepositoryTests
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
         _repository!.StartGame(game);
-        await _context!.SaveChangesAsync();
-        result = await _context.Games.FindAsync(1);
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
+        result = await _context.Games.FindAsync(1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -620,20 +622,16 @@ public class GameRepositoryTests
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
         _repository!.RemoveGame(game);
-        await _context!.SaveChangesAsync();
-        result = await _context.Games.FindAsync(1);
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
+        result = await _context.Games.FindAsync(1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Null);
     }
-
-
-
-
 
 }

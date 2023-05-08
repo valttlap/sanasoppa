@@ -11,7 +11,7 @@ public class ExplanationConfiguration : IEntityTypeConfiguration<Explanation>
     public void Configure(EntityTypeBuilder<Explanation> builder)
     {
         builder.HasKey(e => e.Id);
-        builder.Property(e => e.Id).ValueGeneratedOnAdd();
+        builder.Property(e => e.Id).UseIdentityAlwaysColumn();
 
         builder.Property(e => e.Text).IsRequired();
 

@@ -59,7 +59,7 @@ public class ErrorHandlerMiddleware
 
     private async Task HandleExceptionAsync(HttpContext context, Exception ex)
     {
-        _logger.LogError(ex, ex.Message);
+        _logger.LogError(ex, "An exception occurred: {ExceptionMessage}", ex.Message);
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 

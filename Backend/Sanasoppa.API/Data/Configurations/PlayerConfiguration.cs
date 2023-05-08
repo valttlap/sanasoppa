@@ -11,7 +11,7 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
     public void Configure(EntityTypeBuilder<Player> builder)
     {
         builder.HasKey(e => e.Id);
-        builder.Property(e => e.Id).ValueGeneratedOnAdd();
+        builder.Property(e => e.Id).UseIdentityAlwaysColumn();
 
         builder.Property(p => p.IsHost)
             .HasDefaultValue(false)

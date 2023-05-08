@@ -11,7 +11,7 @@ public class RoundConfiguration : IEntityTypeConfiguration<Round>
     public void Configure(EntityTypeBuilder<Round> builder)
     {
         builder.HasKey(e => e.Id);
-        builder.Property(e => e.Id).ValueGeneratedOnAdd();
+        builder.Property(e => e.Id).UseIdentityAlwaysColumn();
 
         builder.Property(e => e.IsCurrent)
             .HasDefaultValue(false)

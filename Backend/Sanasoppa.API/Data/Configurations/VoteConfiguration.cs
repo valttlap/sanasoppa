@@ -11,7 +11,7 @@ public class VoteConfiguration : IEntityTypeConfiguration<Vote>
     public void Configure(EntityTypeBuilder<Vote> builder)
     {
         builder.HasKey(v => v.Id);
-        builder.Property(v => v.Id).ValueGeneratedOnAdd();
+        builder.Property(v => v.Id).UseIdentityAlwaysColumn();
         builder.HasOne(v => v.Round)
             .WithMany(r => r.Votes)
             .HasForeignKey(v => v.RoundId)

@@ -1,7 +1,10 @@
-using Sanasoppa.API.Entities;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.EntityFrameworkCore;
 using Sanasoppa.API.Data;
 using Sanasoppa.API.Data.Repositories;
-using Microsoft.EntityFrameworkCore;
+using Sanasoppa.API.Entities;
 
 namespace Sanasoppa.API.Tests.Repositories;
 
@@ -37,13 +40,13 @@ public class PlayerRepositoryTests
 
             // Act
             repository.AddPlayer(_player1!);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         // Assert
         using (var context = new DataContext(_options!))
         {
-            var player = await context.Players.FindAsync(1);
+            var player = await context.Players.FindAsync(1).ConfigureAwait(false);
             Assert.That(player, Is.Not.Null);
             Assert.Multiple(() =>
             {
@@ -61,14 +64,14 @@ public class PlayerRepositoryTests
         using (var context = new DataContext(_options!))
         {
             context.Players.Add(_player1!);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         // Act
         using (var context = new DataContext(_options!))
         {
             var repository = new PlayerRepository(context);
-            var result = await repository.GetPlayerAsync(1);
+            var result = await repository.GetPlayerAsync(1).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -89,14 +92,14 @@ public class PlayerRepositoryTests
         {
             var repository = new PlayerRepository(context);
             context.Players.Add(_player1!);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         // Act
         using (var context = new DataContext(_options!))
         {
             var repository = new PlayerRepository(context);
-            var result = await repository.GetPlayerByConnIdAsync("123");
+            var result = await repository.GetPlayerByConnIdAsync("123").ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -117,14 +120,14 @@ public class PlayerRepositoryTests
         {
             var repository = new PlayerRepository(context);
             context.Players.Add(_player1!);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         // Act
         using (var context = new DataContext(_options!))
         {
             var repository = new PlayerRepository(context);
-            var result = await repository.GetPlayerByUsernameAsync("Test Player");
+            var result = await repository.GetPlayerByUsernameAsync("Test Player").ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -145,22 +148,21 @@ public class PlayerRepositoryTests
         {
             var repository = new PlayerRepository(context);
             context.Players.Add(_player1!);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         // Act
         using (var context = new DataContext(_options!))
         {
             var repository = new PlayerRepository(context);
-            await repository.GivePointsAsync(1, 10);
-            await context.SaveChangesAsync();
+            await repository.GivePointsAsync(1, 10).ConfigureAwait(false);
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
-
 
         // Assert
         using (var context = new DataContext(_options!))
         {
-            var result = await context.Players.FindAsync(1);
+            var result = await context.Players.FindAsync(1).ConfigureAwait(false);
             Assert.That(result, Is.Not.Null);
             Assert.That(result?.TotalPoints, Is.EqualTo(10));
         }
@@ -176,14 +178,14 @@ public class PlayerRepositoryTests
             context.Players.Add(_player1!);
             _game1!.Players.Add(_player1!);
             context.Games.Add(_game1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         // Act
         using (var context = new DataContext(_options!))
         {
             var repository = new PlayerRepository(context);
-            var result = await repository.GetPlayerGameAsync(_player1!.ConnectionId);
+            var result = await repository.GetPlayerGameAsync(_player1!.ConnectionId).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -207,14 +209,14 @@ public class PlayerRepositoryTests
             context.Games.Add(_game1);
             context.Rounds.Add(_round1!);
             context.Rounds.Add(_round2!);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         // Act
         using (var context = new DataContext(_options!))
         {
             var repository = new PlayerRepository(context);
-            var result = await repository.GetPlayerGameAsync(_player1!);
+            var result = await repository.GetPlayerGameAsync(_player1!).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -240,14 +242,14 @@ public class PlayerRepositoryTests
             context.Players.Add(_player2!);
             _game1!.Players.Add(_player1!);
             context.Games.Add(_game1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         // Act
         using (var context = new DataContext(_options!))
         {
             var repository = new PlayerRepository(context);
-            var result = await repository.GetPlayersNotInGameAsync();
+            var result = await repository.GetPlayersNotInGameAsync().ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.Not.Null);

@@ -4,6 +4,7 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Sanasoppa.API.Data;
+using Sanasoppa.API.Entities;
 using Sanasoppa.API.Extensions;
 using Sanasoppa.API.Hubs;
 
@@ -25,9 +26,17 @@ if (builder.Environment.IsDevelopment())
 }
 connString = connStringBuilder.ConnectionString;
 
+var dataSourceBuilder = new NpgsqlDataSourceBuilder(connString);
+dataSourceBuilder.MapEnum<GameState>();
+
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+await using var dataSource = dataSourceBuilder.Build();
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+
 builder.Services.AddDbContext<DataContext>(opt =>
 {
-    opt.UseNpgsql(connString);
+    opt.UseNpgsql(dataSource);
+    opt.UseSnakeCaseNamingConvention();
 });
 
 var app = builder.Build();
@@ -47,6 +56,9 @@ try
 {
     var context = services.GetRequiredService<DataContext>();
     await context.Database.MigrateAsync().ConfigureAwait(false);
+    using var conn = (NpgsqlConnection)context.Database.GetDbConnection();
+    await conn.OpenAsync().ConfigureAwait(false);
+    await conn.ReloadTypesAsync().ConfigureAwait(false);
 }
 catch (Exception ex)
 {
