@@ -1,11 +1,12 @@
 import { BusyService } from './busy.service';
-import { User } from './../_models/user';
 import { Injectable } from '@angular/core';
+import { AuthService, User } from '@auth0/auth0-angular';
 import {
   HttpTransportType,
   HubConnection,
   HubConnectionBuilder,
 } from '@microsoft/signalr';
+import { lastValueFrom } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -13,24 +14,28 @@ import { environment } from 'src/environments/environment';
 })
 export class LobbyHubService {
   private hubConnection?: HubConnection;
-  private hubUrl = environment.hubUrl;
+  private hubUrl = environment.api.hubUrl;
 
-  constructor(private busyService: BusyService) {}
+  constructor(private busyService: BusyService, private auth: AuthService) {}
 
-  startConnection(user: User) {
+  async startConnection() {
     this.busyService.busy();
-    this.hubConnection = new HubConnectionBuilder()
-      .withUrl(`${this.hubUrl}/lobbyhub`, {
-        accessTokenFactory: () => user.token,
-        transport: HttpTransportType.WebSockets,
-      })
-      .withAutomaticReconnect()
-      .build();
+    try {
+      const token = await lastValueFrom(this.auth.getAccessTokenSilently());
+      this.hubConnection = new HubConnectionBuilder()
+        .withUrl(`${this.hubUrl}/lobbyhub`, {
+          accessTokenFactory: () => token,
+          transport: HttpTransportType.WebSockets,
+        })
+        .withAutomaticReconnect()
+        .build();
 
-    this.hubConnection
-      .start()
-      .catch(err => console.error(err))
-      .finally(() => this.busyService.idle());
+      await this.hubConnection.start();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      this.busyService.idle();
+    }
   }
 
   getHubConnection(): HubConnection {

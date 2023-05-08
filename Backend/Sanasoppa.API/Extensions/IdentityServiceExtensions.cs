@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using Sanasoppa.API.Data;
 using Sanasoppa.API.Entities;
 using Sanasoppa.API.Interfaces;
+using System.Security.Claims;
 using System.Text;
 
 namespace Sanasoppa.API.Extensions;
@@ -12,47 +13,17 @@ public static class IdentityServiceExtensions
 {
     public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration config)
     {
-        services.AddIdentityCore<AppUser>(opt =>
-        {
-            opt.Password.RequireLowercase = true;
-            opt.Password.RequireUppercase = true;
-            opt.Password.RequireDigit = true;
-            opt.Password.RequireNonAlphanumeric = true;
-            opt.Password.RequiredLength = 8;
-            opt.User.RequireUniqueEmail = true;
-            opt.SignIn.RequireConfirmedEmail = true;
-            opt.Tokens.EmailConfirmationTokenProvider = TokenOptions.DefaultEmailProvider;
-            opt.Tokens.PasswordResetTokenProvider = "PasswordResetTokenProvider";
-        })
-            .AddRoles<AppRole>()
-            .AddDefaultTokenProviders()
-            .AddRoleManager<RoleManager<AppRole>>()
-            .AddEntityFrameworkStores<DataContext>();
-
-        services.Configure<DataProtectionTokenProviderOptions>(options =>
-        {
-            options.TokenLifespan = TimeSpan.FromHours(3);
-        });
-
-        services.Configure<DataProtectionTokenProviderOptions>("PasswordResetTokenProvider", options =>
-        {
-            options.TokenLifespan = TimeSpan.FromHours(1);
-        });
-
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
+        .AddJwtBearer(options =>
             {
+                options.Authority = config["Auth0:Authority"];
+                options.Audience = config["Auth0:Audience"];
+                options.RequireHttpsMetadata = false;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
+                    ValidateAudience = true,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding
-                        .UTF8.GetBytes(config["TokenKey"] ?? throw new Exception("Token key not found"))),
-                    ValidateIssuer = false,
-                    ValidateAudience = false
                 };
-
-                options.SaveToken = true;
-
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
@@ -67,26 +38,24 @@ public static class IdentityServiceExtensions
 
                         return Task.CompletedTask;
                     },
-                    /* OnAuthenticationFailed = context =>
+                    OnTokenValidated = context =>
                     {
-                        RefreshToken refreshToken = context.HttpContext.Request.Cookies["refreshToken"];
-                        if (!string.IsNullOrEmpty(refreshToken))
+                        if (context.Principal != null && context.Principal.Identity != null)
                         {
-                            var tokenService = context.HttpContext.RequestServices.GetRequiredService<ITokenService>();
-                            try 
+                            var claimsIdentity = context.Principal.Identity as ClaimsIdentity;
+                            var userRoles = context.Principal.FindAll("permissions");
+
+                            if (userRoles != null && claimsIdentity != null)
                             {
-                                var (newAccessToken, newRefreshToken) = tokenService.RefreshToken(refreshToken);
-                                context.Response.Headers.Add("Authorization", "Bearer " + newAccessToken);
-                                context.Response.Cookies.Append("refreshToken", newRefreshToken);
-                            }
-                            catch (SecurityTokenException)
-                            {
-                                context.Fail("Unauthorized");
+                                claimsIdentity.AddClaims(userRoles);
                             }
                         }
-                    } */
+
+                        return Task.CompletedTask;
+                    }
                 };
             });
+
 
         services.AddAuthorization(opt =>
         {

@@ -1,0 +1,22 @@
+<app-page-layout>
+  <div class="welcome-base">
+    <div class="wrapper-welcome">
+      <h1>SanaSoppa</h1>
+      <h2 *ngIf="user$ | async as user">
+        Hei
+        {{
+          user.name
+            ? user.name
+            : user.nickname
+            ? user.nickname
+            : user.email
+            ? user.email
+            : 'Tietoja ei löydy'
+        }}!
+      </h2>
+      <button *ngIf="user$ | async" class="btn btn-primary" routerLink="/list">
+        Siirry pelilistaukseen
+      </button>
+    </div>
+  </div>
+</app-page-layout>

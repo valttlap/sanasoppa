@@ -1,11 +1,10 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Sanasoppa.API.Data;
-using Sanasoppa.API.Entities;
 using Sanasoppa.API.Extensions;
 using Sanasoppa.API.Hubs;
-using Sanasoppa.API.Middleware;
+
+Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,17 +29,10 @@ builder.Services.AddDbContext<DataContext>(opt =>
 
 var app = builder.Build();
 
-app.UseMiddleware<ExceptionMiddleware>();
 
-if (builder.Environment.IsDevelopment())
-{
-    app.UseCors(builder => builder
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowCredentials()
-        .WithOrigins("https://localhost:4200"));
-}
-
+app.UseErrorHandler();
+app.UseSecureHeaders();
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -53,11 +45,7 @@ var services = scope.ServiceProvider;
 try
 {
     var context = services.GetRequiredService<DataContext>();
-    var userManager = services.GetRequiredService<UserManager<AppUser>>();
-    var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
-    var environment = services.GetRequiredService<IWebHostEnvironment>();
     await context.Database.MigrateAsync();
-    await Seed.SeedDefaultUserAsync(userManager, roleManager, environment.IsDevelopment());
 }
 catch (Exception ex)
 {

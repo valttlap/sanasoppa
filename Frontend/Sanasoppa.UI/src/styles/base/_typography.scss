@@ -1,8 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-
+/**
+ * Basic typography style for copy text
+ */
 body {
-  font-family: "Inter", sans-serif;
-  font-weight: 400;
-  font-size: $default-font-size;
-  line-height: 1.7;
+  color: $text-color;
+  font: normal 125% / 1.4 $text-font-stack;
 }

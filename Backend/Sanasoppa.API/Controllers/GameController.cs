@@ -5,7 +5,7 @@ using Sanasoppa.API.DTOs;
 using Sanasoppa.API.Interfaces;
 
 namespace Sanasoppa.API.Controllers;
-[Authorize(Policy = "RequireMemberRole")]
+[Authorize]
 public class GameController : BaseApiController
 {
     private readonly IUnitOfWork _uow;

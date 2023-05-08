@@ -12,15 +12,16 @@ import { ErrorComponent } from './components/error/error.component';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ListComponent } from './game/list/list.component';
 import { NotFoundComponent } from './errors/not-found/not-found.component';
-import { HomeComponent } from './home/home.component';
 import { CreateComponent } from './game/create/create.component';
 import { ServerErrorComponent } from './errors/server-error/server-error.component';
 import { ErrorInterceptor } from './_interceptors/error.interceptor';
-import { JwtInterceptor } from './_interceptors/jwt.interceptor';
 import { LoadingInterceptor } from './_interceptors/loading.interceptor';
 import { SharedModule } from './_modules/shared/shared.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RecaptchaV3Module, RECAPTCHA_V3_SITE_KEY } from 'ng-recaptcha';
+import { AuthHttpInterceptor, AuthModule } from '@auth0/auth0-angular';
+import { AuthButtonComponent } from './components/auth-button/auth-button.component';
+import { environment as env } from '../environments/environment';
 
 @NgModule({
   declarations: [
@@ -29,9 +30,9 @@ import { RecaptchaV3Module, RECAPTCHA_V3_SITE_KEY } from 'ng-recaptcha';
     ErrorComponent,
     ListComponent,
     NotFoundComponent,
-    HomeComponent,
     CreateComponent,
     ServerErrorComponent,
+    AuthButtonComponent,
   ],
   imports: [
     BrowserAnimationsModule,
@@ -40,13 +41,20 @@ import { RecaptchaV3Module, RECAPTCHA_V3_SITE_KEY } from 'ng-recaptcha';
     NgbModule,
     FormsModule,
     HttpClientModule,
+    AuthModule.forRoot({
+      ...env.auth0,
+      cacheLocation: 'localstorage',
+      httpInterceptor: {
+        allowedList: ['*'],
+      },
+    }),
     SharedModule,
     RecaptchaV3Module,
   ],
   providers: [
     GameHubService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: AuthHttpInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: LoadingInterceptor, multi: true },
     { provide: RECAPTCHA_V3_SITE_KEY, useValue: environment.recaptcha.siteKey },
   ],

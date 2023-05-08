@@ -1,22 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { User } from './_models/user';
-import { AccountService } from './_services/account.service';
-
+import { Component } from '@angular/core';
+import { AuthService } from '@auth0/auth0-angular';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
 })
-export class AppComponent implements OnInit {
-  constructor(private accountService: AccountService) {}
+export class AppComponent {
+  isAuth0Loading$ = this.auth.isLoading$;
 
-  ngOnInit(): void {
-    this.setCurrentUser();
-  }
-
-  setCurrentUser() {
-    const userString = localStorage.getItem('user');
-    if (!userString) return;
-    const user: User = JSON.parse(userString);
-    this.accountService.setCurrentUser(user);
-  }
+  constructor(private auth: AuthService) {}
 }

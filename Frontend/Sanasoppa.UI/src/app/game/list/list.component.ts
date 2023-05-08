@@ -4,10 +4,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HubConnection } from '@microsoft/signalr';
 import { take } from 'rxjs';
 import { Game } from 'src/app/_models/game';
-import { User } from 'src/app/_models/user';
-import { AccountService } from 'src/app/_services/account.service';
 import { GameHubService } from 'src/app/_services/gamehub.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { AuthService, User } from '@auth0/auth0-angular';
 
 @Component({
   selector: 'app-list',
@@ -25,10 +24,10 @@ export class ListComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private lobbyHubService: LobbyHubService,
     private gameHubService: GameHubService,
-    private accountService: AccountService,
+    private auth: AuthService,
     private modalService: NgbModal
   ) {
-    this.accountService.currentUser$.pipe(take(1)).subscribe({
+    this.auth.user$.pipe(take(1)).subscribe({
       next: user => {
         if (user) this.user = user;
       },
@@ -43,7 +42,7 @@ export class ListComponent implements OnInit, OnDestroy {
       this.router.navigate(['/']);
       return;
     }
-    this.lobbyHubService.startConnection(this.user);
+    this.lobbyHubService.startConnection();
     this.lobbyHub = this.lobbyHubService.getHubConnection();
     this.lobbyHub.on('GameListUpdated', (games: Game[]) =>
       this.updateGames(games)
