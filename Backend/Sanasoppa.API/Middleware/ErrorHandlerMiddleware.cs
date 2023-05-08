@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System.Net;
 using System.Text.Json;
 using Sanasoppa.API.Errors;
@@ -22,14 +25,14 @@ public class ErrorHandlerMiddleware
     {
         try
         {
-            await _next(context);
+            await _next(context).ConfigureAwait(false);
 
             if (context.Response is HttpResponse response && response.StatusCode == (int)HttpStatusCode.NotFound)
             {
                 await response.WriteAsJsonAsync(new
                 {
                     message = "Not Found"
-                });
+                }).ConfigureAwait(false);
             }
             else if (context.Response is HttpResponse unauthorizedResponse && unauthorizedResponse.StatusCode == (int)HttpStatusCode.Unauthorized)
             {
@@ -38,19 +41,19 @@ public class ErrorHandlerMiddleware
                     message = context.Request.Headers.ContainsKey("Authorization")
                                         ? "Bad credentials"
                                         : "Requires authentication"
-                });
+                }).ConfigureAwait(false);
             }
             else if (context.Response is HttpResponse forbiddenResponse && forbiddenResponse.StatusCode == (int)HttpStatusCode.Forbidden)
             {
                 await forbiddenResponse.WriteAsJsonAsync(new
                 {
                     message = "Forbidden"
-                });
+                }).ConfigureAwait(false);
             }
         }
         catch (Exception ex)
         {
-            await HandleExceptionAsync(context, ex);
+            await HandleExceptionAsync(context, ex).ConfigureAwait(false);
         }
     }
 
@@ -67,6 +70,6 @@ public class ErrorHandlerMiddleware
         var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         var json = JsonSerializer.Serialize(response, options);
 
-        await context.Response.WriteAsync(json);
+        await context.Response.WriteAsync(json).ConfigureAwait(false);
     }
 }

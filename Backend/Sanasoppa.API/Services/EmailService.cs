@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Sanasoppa.API.Interfaces;
 using sib_api_v3_sdk.Api;
 using sib_api_v3_sdk.Client;
@@ -20,12 +23,12 @@ public class EmailService : IEmailService
 
     public async Task<bool> SendConfirmationEmailAsync(string email, string token)
     {
-        return await SendEmailAsync(email, "SendGrid:Templates:Confirmation");
+        return await SendEmailAsync(email, "SendGrid:Templates:Confirmation").ConfigureAwait(false);
     }
 
     public async Task<bool> SendPasswordResetEmailAsync(string email, string token)
     {
-        return await SendEmailAsync(email, "SendGrid:Templates:PasswordReset");
+        return await SendEmailAsync(email, "SendGrid:Templates:PasswordReset").ConfigureAwait(false);
     }
 
     private async Task<bool> SendEmailAsync(string email, string templatePath)
@@ -42,7 +45,7 @@ public class EmailService : IEmailService
 
         try
         {
-            await _apiInstance.SendTransacEmailAsync(sendSmtpEmail);
+            await _apiInstance.SendTransacEmailAsync(sendSmtpEmail).ConfigureAwait(false);
             return true;
         }
         catch (Exception)

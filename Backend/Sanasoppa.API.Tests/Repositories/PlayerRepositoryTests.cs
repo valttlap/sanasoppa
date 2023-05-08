@@ -45,9 +45,12 @@ public class PlayerRepositoryTests
         {
             var player = await context.Players.FindAsync(1);
             Assert.That(player, Is.Not.Null);
-            Assert.That(player?.Id, Is.EqualTo(1));
-            Assert.That(player?.ConnectionId, Is.EqualTo("123"));
-            Assert.That(player?.Username, Is.EqualTo("Test Player"));
+            Assert.Multiple(() =>
+            {
+                Assert.That(player?.Id, Is.EqualTo(1));
+                Assert.That(player?.ConnectionId, Is.EqualTo("123"));
+                Assert.That(player?.Username, Is.EqualTo("Test Player"));
+            });
         }
     }
 
@@ -69,9 +72,12 @@ public class PlayerRepositoryTests
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result?.Id, Is.EqualTo(1));
-            Assert.That(result?.ConnectionId, Is.EqualTo("123"));
-            Assert.That(result?.Username, Is.EqualTo("Test Player"));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result?.Id, Is.EqualTo(1));
+                Assert.That(result?.ConnectionId, Is.EqualTo("123"));
+                Assert.That(result?.Username, Is.EqualTo("Test Player"));
+            });
         }
     }
 
@@ -94,9 +100,12 @@ public class PlayerRepositoryTests
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result?.Id, Is.EqualTo(1));
-            Assert.That(result?.ConnectionId, Is.EqualTo("123"));
-            Assert.That(result?.Username, Is.EqualTo("Test Player"));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result?.Id, Is.EqualTo(1));
+                Assert.That(result?.ConnectionId, Is.EqualTo("123"));
+                Assert.That(result?.Username, Is.EqualTo("Test Player"));
+            });
         }
     }
 
@@ -119,9 +128,12 @@ public class PlayerRepositoryTests
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result?.Id, Is.EqualTo(1));
-            Assert.That(result?.ConnectionId, Is.EqualTo("123"));
-            Assert.That(result?.Username, Is.EqualTo("Test Player"));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result?.Id, Is.EqualTo(1));
+                Assert.That(result?.ConnectionId, Is.EqualTo("123"));
+                Assert.That(result?.Username, Is.EqualTo("Test Player"));
+            });
         }
     }
 
@@ -175,8 +187,11 @@ public class PlayerRepositoryTests
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result?.Id, Is.EqualTo(1));
-            Assert.That(result?.Name, Is.EqualTo("Test Game"));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result?.Id, Is.EqualTo(1));
+                Assert.That(result?.Name, Is.EqualTo("Test Game"));
+            });
         }
     }
 
@@ -203,11 +218,14 @@ public class PlayerRepositoryTests
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result?.Id, Is.EqualTo(1));
-            Assert.That(result?.Name, Is.EqualTo("Test Game"));
-            Assert.That(result?.CurrentRound?.Id, Is.EqualTo(1));
-            Assert.That(result?.CurrentRound?.Word, Is.EqualTo("Test Word"));
-            Assert.That(result?.CurrentRound?.DasherId, Is.EqualTo(1));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result?.Id, Is.EqualTo(1));
+                Assert.That(result?.Name, Is.EqualTo("Test Game"));
+                Assert.That(result?.CurrentRound?.Id, Is.EqualTo(1));
+                Assert.That(result?.CurrentRound?.Word, Is.EqualTo("Test Word"));
+                Assert.That(result?.CurrentRound?.DasherId, Is.EqualTo(1));
+            });
         }
     }
 
@@ -233,10 +251,13 @@ public class PlayerRepositoryTests
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Count(), Is.EqualTo(1));
-            Assert.That(result?.FirstOrDefault()?.Id, Is.EqualTo(2), "Player 2 should be returned");
-            Assert.That(result?.FirstOrDefault()?.ConnectionId, Is.EqualTo("456"), "Player 2 should be returned");
-            Assert.That(result?.FirstOrDefault()?.Username, Is.EqualTo("Test Player 2"), "Player 2 should be returned");
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Count(), Is.EqualTo(1));
+                Assert.That(result?.FirstOrDefault()?.Id, Is.EqualTo(2), "Player 2 should be returned");
+                Assert.That(result?.FirstOrDefault()?.ConnectionId, Is.EqualTo("456"), "Player 2 should be returned");
+                Assert.That(result?.FirstOrDefault()?.Username, Is.EqualTo("Test Player 2"), "Player 2 should be returned");
+            });
         }
     }
 }

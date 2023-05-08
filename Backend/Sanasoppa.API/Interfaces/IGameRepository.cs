@@ -1,4 +1,7 @@
-﻿using Sanasoppa.API.DTOs;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Sanasoppa.API.DTOs;
 using Sanasoppa.API.Entities;
 
 namespace Sanasoppa.API.Interfaces;
@@ -47,14 +50,12 @@ public interface IGameRepository
     /// <returns>Returns a collection of all games that have not started yet.</returns>
     Task<IEnumerable<GameDto?>> GetNotStartedGamesAsync();
 
-
     /// <summary>
     /// Get the dasher in a game.
     /// </summary>
     /// <param name="game">The game object to retrieve the dasher for.</param>
     /// <returns>Returns the dasher in the specified game, or null if the game does not exist or has no dasher.</returns>
     Task<Player?> GetDasherAsync(Game game);
-
 
     /// <summary>
     /// Check if a game with the id exists.

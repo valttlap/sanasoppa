@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 namespace Sanasoppa.API.Middleware;
 
 public class SecureHeadersMiddleware
@@ -19,6 +22,6 @@ public class SecureHeadersMiddleware
         context.Response.Headers.Add("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate");
         context.Response.Headers.Add("Pragma", "no-cache");
 
-        await _next(context);
+        await _next(context).ConfigureAwait(false);
     }
 }

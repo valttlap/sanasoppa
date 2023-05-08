@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Sanasoppa.API.Data;
@@ -29,13 +32,11 @@ builder.Services.AddDbContext<DataContext>(opt =>
 
 var app = builder.Build();
 
-
 app.UseErrorHandler();
 app.UseSecureHeaders();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
-
 
 app.MapControllers();
 app.MapHub<GameHub>("hubs/gamehub");
@@ -45,7 +46,7 @@ var services = scope.ServiceProvider;
 try
 {
     var context = services.GetRequiredService<DataContext>();
-    await context.Database.MigrateAsync();
+    await context.Database.MigrateAsync().ConfigureAwait(false);
 }
 catch (Exception ex)
 {

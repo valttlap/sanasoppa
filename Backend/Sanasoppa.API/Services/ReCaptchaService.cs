@@ -1,6 +1,9 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System.Text.Json;
-using Sanasoppa.API.Responses.Models;
 using Sanasoppa.API.Interfaces;
+using Sanasoppa.API.Responses.Models;
 
 namespace Sanasoppa.API.Services;
 
@@ -20,11 +23,11 @@ public class ReCaptchaService : IReCaptchaService
         var secretKey = _configuration.GetValue<string>("ReCaptcha:SecretKeyDevelopment");
         var apiUrl = $"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={token}";
 
-        var response = await httpClient.PostAsync(apiUrl, null);
+        var response = await httpClient.PostAsync(apiUrl, null).ConfigureAwait(false);
 
         if (response.IsSuccessStatusCode)
         {
-            var jsonResponse = await response.Content.ReadAsStringAsync();
+            var jsonResponse = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var result = JsonSerializer.Deserialize<ReCaptchaResponse>(jsonResponse);
 
             if (result != null && result.Success)

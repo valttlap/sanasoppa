@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System.Net;
 using System.Text.Json;
 using Sanasoppa.API.Errors;
@@ -22,7 +25,7 @@ public class ExceptionMiddleware
     {
         try
         {
-            await _next(context);
+            await _next(context).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -37,7 +40,7 @@ public class ExceptionMiddleware
             var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
             var json = JsonSerializer.Serialize(response, options);
 
-            await context.Response.WriteAsync(json);
+            await context.Response.WriteAsync(json).ConfigureAwait(false);
         }
     }
 }

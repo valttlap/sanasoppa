@@ -17,7 +17,7 @@ public class GameRepositoryTests
     private DataContext? _context;
     private IGameRepository? _repository;
     private IMapper? _mapper;
-    private Faker _faker = new("fi");
+    private readonly Faker _faker = new("fi");
 
     [SetUp]
     public void Setup()
@@ -28,7 +28,7 @@ public class GameRepositoryTests
         _repository = new GameRepository(_context, _mapper);
     }
 
-    private IMapper ConfigureMapper()
+    private static IMapper ConfigureMapper()
     {
         var mapperConfig = new MapperConfiguration(cfg =>
         {
@@ -68,12 +68,14 @@ public class GameRepositoryTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Count(), Is.EqualTo(3));
-        Assert.That(result, Has.Some.Matches<Game?>(g => g?.Id == 1 && g.Name == game1.Name && g.GameState == GameState.NotStarted));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Count(), Is.EqualTo(3));
+            Assert.That(result, Has.Some.Matches<Game?>(g => g?.Id == 1 && g.Name == game1.Name && g.GameState == GameState.NotStarted));
+        });
         Assert.That(result, Has.Some.Matches<Game?>(g => g?.Id == 2 && g.Name == game2.Name && g.GameState == GameState.NotStarted));
         Assert.That(result, Has.Some.Matches<Game?>(g => g?.Id == 3 && g.Name == game3.Name && g.GameState == GameState.NotStarted));
     }
-
 
     [Test]
     public async Task GetGameAsync_ShouldReturnGameById()
@@ -89,9 +91,12 @@ public class GameRepositoryTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Id, Is.EqualTo(1));
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+        });
     }
 
     [Test]
@@ -108,9 +113,12 @@ public class GameRepositoryTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Id, Is.EqualTo(1));
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+        });
     }
 
     [Test]
@@ -136,12 +144,18 @@ public class GameRepositoryTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
-        Assert.That(result.Players, Is.Not.Null);
-        Assert.That(result.Players.Count(), Is.EqualTo(1));
-        Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints && p.GameId == result.Id));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Id, Is.EqualTo(1));
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+            Assert.That(result.Players, Is.Not.Null);
+        });
+        Assert.Multiple(() =>
+        {
+            Assert.That(result?.Players, Has.Count.EqualTo(1));
+            Assert.That(result?.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints && p.GameId == result?.Id));
+        });
     }
 
     [Test]
@@ -167,12 +181,15 @@ public class GameRepositoryTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
-        Assert.That(result.Players, Is.Not.Null);
-        Assert.That(result.Players.Count(), Is.EqualTo(1));
-        Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints && p.GameId == result.Id));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Id, Is.EqualTo(1));
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+            Assert.That(result.Players, Is.Not.Null);
+        });
+        Assert.That(result?.Players, Has.Count.EqualTo(1));
+        Assert.That(result?.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints && p.GameId == result?.Id));
     }
 
     [Test]
@@ -206,13 +223,19 @@ public class GameRepositoryTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
-        Assert.That(result.Players, Is.Not.Null);
-        Assert.That(result.Players.Count(), Is.EqualTo(1));
-        Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints));
-        Assert.That(result.Rounds, Is.Not.Null);
-        Assert.That(result.Rounds.Count(), Is.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+            Assert.That(result.Players, Is.Not.Null);
+        });
+        Assert.That(result.Players, Has.Count.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints));
+            Assert.That(result.Rounds, Is.Not.Null);
+        });
+        Assert.That(result.Rounds, Has.Count.EqualTo(1));
         Assert.That(result.Rounds, Has.Some.Matches<Round>(r => r.Id == 1 && r.Word == round.Word && r.GameId == round.GameId && r.IsCurrent == round.IsCurrent));
     }
 
@@ -246,15 +269,21 @@ public class GameRepositoryTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
-        Assert.That(result.Players, Is.Not.Null);
-        Assert.That(result.Players.Count(), Is.EqualTo(1));
-        Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints));
-        Assert.That(result.Rounds, Is.Not.Null);
-        Assert.That(result.Rounds.Count(), Is.EqualTo(1));
-        Assert.That(result.Rounds, Has.Some.Matches<Round>(r => r.Id == 1 && r.Word == round.Word && r.GameId == round.GameId && r.IsCurrent == round.IsCurrent));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Id, Is.EqualTo(1));
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+            Assert.That(result.Players, Is.Not.Null);
+        });
+        Assert.That(result?.Players, Has.Count.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result?.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints));
+            Assert.That(result?.Rounds, Is.Not.Null);
+        });
+        Assert.That(result?.Rounds.Count, Is.EqualTo(1));
+        Assert.That(result?.Rounds, Has.Some.Matches<Round>(r => r.Id == 1 && r.Word == round.Word && r.GameId == round.GameId && r.IsCurrent == round.IsCurrent));
     }
 
     [Test]
@@ -285,8 +314,11 @@ public class GameRepositoryTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Count(), Is.EqualTo(1));
-        Assert.That(result, Has.Some.Matches<GameDto>(g => g.Name == game1!.Name && g.Players == 1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Count(), Is.EqualTo(1));
+            Assert.That(result, Has.Some.Matches<GameDto>(g => g.Name == game1!.Name && g.Players == 1));
+        });
     }
 
     [Test]
@@ -328,11 +360,13 @@ public class GameRepositoryTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Username, Is.EqualTo(player.Username));
-        Assert.That(result.ConnectionId, Is.EqualTo(player.ConnectionId));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Id, Is.EqualTo(1));
+            Assert.That(result.Username, Is.EqualTo(player.Username));
+            Assert.That(result.ConnectionId, Is.EqualTo(player.ConnectionId));
+        });
     }
-
 
     [Test]
     public async Task GameExistsAsync_ShouldReturnTrueIfGameExists()
@@ -384,9 +418,11 @@ public class GameRepositoryTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
-
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+        });
     }
 
     [Test]
@@ -417,9 +453,12 @@ public class GameRepositoryTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Players, Is.Not.Null);
-        Assert.That(result.Players.Count(), Is.EqualTo(1));
-        Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Players, Is.Not.Null);
+            Assert.That(result.Players, Has.Count.EqualTo(1));
+            Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints));
+        });
     }
 
     [Test]
@@ -509,9 +548,12 @@ public class GameRepositoryTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Players, Is.Not.Null);
-        Assert.That(result.Players.Count(), Is.EqualTo(1));
-        Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Players, Is.Not.Null);
+            Assert.That(result.Players, Has.Count.EqualTo(1));
+            Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints));
+        });
     }
 
     [Test]
@@ -539,10 +581,13 @@ public class GameRepositoryTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
-        Assert.That(result.Players.Count(), Is.EqualTo(0));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Id, Is.EqualTo(1));
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+            Assert.That(result.Players, Is.Empty);
+        });
     }
 
     [Test]
@@ -561,9 +606,12 @@ public class GameRepositoryTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.WaitingDasher));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Id, Is.EqualTo(1));
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.WaitingDasher));
+        });
     }
 
     [Test]

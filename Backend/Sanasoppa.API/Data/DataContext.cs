@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.EntityFrameworkCore;
 using Sanasoppa.API.Data.Configurations;
 using Sanasoppa.API.Entities;
@@ -16,13 +17,13 @@ public class DataContext : DbContext
     public DbSet<Explanation> Explanations { get; set; } = default!;
     public DbSet<Vote> Votes { get; set; } = default!;
 
-    protected override void OnModelCreating(ModelBuilder builder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(builder);
-        builder.ApplyConfiguration(new GameConfiguration());
-        builder.ApplyConfiguration(new RoundConfiguration());
-        builder.ApplyConfiguration(new ExplanationConfiguration());
-        builder.ApplyConfiguration(new PlayerConfiguration());
-        builder.ApplyConfiguration(new VoteConfiguration());
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfiguration(new GameConfiguration());
+        modelBuilder.ApplyConfiguration(new RoundConfiguration());
+        modelBuilder.ApplyConfiguration(new ExplanationConfiguration());
+        modelBuilder.ApplyConfiguration(new PlayerConfiguration());
+        modelBuilder.ApplyConfiguration(new VoteConfiguration());
     }
 }

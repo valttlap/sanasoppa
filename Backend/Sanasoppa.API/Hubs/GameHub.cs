@@ -1,4 +1,7 @@
-﻿using AutoMapper;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Sanasoppa.API.DTOs;
@@ -23,7 +26,7 @@ public class GameHub : Hub
     public override async Task OnConnectedAsync()
     {
         var username = Context.User!.GetUsername()!;
-        var player = await _uow.PlayerRepository.GetPlayerByUsernameAsync(username);
+        var player = await _uow.PlayerRepository.GetPlayerByUsernameAsync(username).ConfigureAwait(false);
 
         if (player == null)
         {
@@ -33,7 +36,7 @@ public class GameHub : Hub
                 Username = username,
             };
             _uow.PlayerRepository.AddPlayer(player);
-            await _uow.Complete();
+            await _uow.Complete().ConfigureAwait(false);
         }
         else if (player.ConnectionId != Context.ConnectionId)
         {
@@ -56,24 +59,22 @@ public class GameHub : Hub
             throw new HubException("Name of the game was not given");
         }
 
-        var game = await _uow.GameRepository.GetGameWithPlayersAsync(gameName);
-        if (game == null)
+        var game = await _uow.GameRepository.GetGameWithPlayersAsync(gameName).ConfigureAwait(false) ?? throw new HubException("Game doesn't exist");
+        _uow.GameRepository.AddPlayerToGame(game, player);
+        await Groups.AddToGroupAsync(player.ConnectionId, gameName!).ConfigureAwait(false);
+
+        if (_uow.HasChanges())
         {
-            throw new HubException("Game doesn't exist");
+            await _uow.Complete().ConfigureAwait(false);
         }
 
-        _uow.GameRepository.AddPlayerToGame(game, player);
-        await Groups.AddToGroupAsync(player.ConnectionId, gameName!);
-
-        if (_uow.HasChanges()) await _uow.Complete();
-
         var players = _mapper.Map<ICollection<PlayerDto>>(game);
-        await Clients.Group(gameName).SendAsync("PlayerJoined", players);
+        await Clients.Group(gameName).SendAsync("PlayerJoined", players).ConfigureAwait(false);
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var player = await _uow.PlayerRepository.GetPlayerByConnIdAsync(Context.ConnectionId);
+        var player = await _uow.PlayerRepository.GetPlayerByConnIdAsync(Context.ConnectionId).ConfigureAwait(false);
 
         if (player == null)
         {
@@ -85,11 +86,11 @@ public class GameHub : Hub
 
         if (player.GameId == null)
         {
-            await _uow.Complete();
+            await _uow.Complete().ConfigureAwait(false);
             return;
         }
 
-        var game = await _uow.GameRepository.GetGameWithPlayersAsync(player.GameId.Value);
+        var game = await _uow.GameRepository.GetGameWithPlayersAsync(player.GameId.Value).ConfigureAwait(false);
 
         if (game == null)
         {
@@ -116,24 +117,16 @@ public class GameHub : Hub
 
         if (_uow.HasChanges())
         {
-            await _uow.Complete();
+            await _uow.Complete().ConfigureAwait(false);
         }
     }
-
-
 
     public async Task<IEnumerable<PlayerDto?>> GetPlayers(string gameName)
     {
-        var game = await _uow.GameRepository.GetGameWithPlayersAsync(gameName.Sanitize());
-
-        if (game == null)
-        {
-            throw new ArgumentException("Invalid game name", nameof(gameName));
-        }
+        var game = await _uow.GameRepository.GetGameWithPlayersAsync(gameName.Sanitize()).ConfigureAwait(false) ?? throw new ArgumentException("Invalid game name", nameof(gameName));
         return _mapper.Map<ICollection<PlayerDto>>(game);
 
     }
-
 
     /// <summary>
     /// It starts a game.
@@ -141,17 +134,12 @@ public class GameHub : Hub
     /// <param name="gameName">The name of the game you want to start.</param>
     public async Task StartGame(string gameName)
     {
-        var game = await _uow.GameRepository.GetGameAsync(gameName.Sanitize());
-        if (game == null)
-        {
-            throw new ArgumentException("Invalid game name", nameof(gameName));
-        }
+        var game = await _uow.GameRepository.GetGameAsync(gameName.Sanitize()).ConfigureAwait(false) ?? throw new ArgumentException("Invalid game name", nameof(gameName));
         _uow.GameRepository.StartGame(game);
 
-
-        if (await _uow.Complete())
+        if (await _uow.Complete().ConfigureAwait(false))
         {
-            var dasher = await _uow.PlayerRepository.GetPlayerAsync(game.Host!.Id);
+            var dasher = await _uow.PlayerRepository.GetPlayerAsync(game.Host!.Id).ConfigureAwait(false);
             var gameStartedTask = Clients.GroupExcept(gameName, dasher!.ConnectionId).SendAsync("WaitDasher", dasher.Username);
             var startRoundTask = Clients.Client(dasher.ConnectionId).SendAsync("StartRound");
             Task.WaitAll(gameStartedTask, startRoundTask);
@@ -166,7 +154,7 @@ public class GameHub : Hub
     {
         word = word.Sanitize();
 
-        var (game, player) = await GetGameAndPlayer(Context.ConnectionId);
+        var (game, player) = await GetGameAndPlayer(Context.ConnectionId).ConfigureAwait(false);
 
         if (game.CurrentRound == null)
         {
@@ -202,7 +190,6 @@ public class GameHub : Hub
             game.CurrentRound.IsCurrent = false;
             _uow.RoundRepository.Update(game.CurrentRound);
 
-
             var round = new Round
             {
                 Game = game,
@@ -219,17 +206,16 @@ public class GameHub : Hub
         game.GameState = GameState.GivingExplanations;
         _uow.GameRepository.Update(game);
 
-        if (await _uow.Complete())
+        if (await _uow.Complete().ConfigureAwait(false))
         {
-            await Clients.Group(game.Name).SendAsync("RoundStarted", word);
+            await Clients.Group(game.Name).SendAsync("RoundStarted", word).ConfigureAwait(false);
         }
     }
-
 
     public async Task GiveExplanation(string explanation)
     {
         explanation = explanation.Sanitize();
-        var (game, player) = await GetGameAndPlayer(Context.ConnectionId);
+        var (game, player) = await GetGameAndPlayer(Context.ConnectionId).ConfigureAwait(false);
         var newExplanation = new Explanation
         {
             Text = explanation,
@@ -241,13 +227,13 @@ public class GameHub : Hub
         };
         _uow.RoundRepository.AddExplanation(game.CurrentRound!, newExplanation);
 
-        if (await _uow.Complete())
+        if (await _uow.Complete().ConfigureAwait(false))
         {
-            await Clients.Group(game.Name).SendAsync("ExplanationGiven", player);
+            await Clients.Group(game.Name).SendAsync("ExplanationGiven", player).ConfigureAwait(false);
             if (game.CurrentRound!.Explanations.Count == game.Players.Count)
             {
-                var dasher = await _uow.GameRepository.GetDasherAsync(game);
-                var round = await _uow.RoundRepository.GetRoundWithExplanationsAsync(game.CurrentRound.Id);
+                var dasher = await _uow.GameRepository.GetDasherAsync(game).ConfigureAwait(false);
+                var round = await _uow.RoundRepository.GetRoundWithExplanationsAsync(game.CurrentRound.Id).ConfigureAwait(false);
                 var playersTask = Clients.GroupExcept(game.Name, dasher!.ConnectionId).SendAsync("AllExplanationsGiven");
                 var dasherTask = Clients.Client(dasher!.ConnectionId).SendAsync("HandleExplanations", _mapper.Map<ICollection<ExplanationDto>>(round!.Explanations));
                 game.GameState = GameState.DasherValuingExplanations;
@@ -260,27 +246,31 @@ public class GameHub : Hub
 
     public async Task ValuateExplanations(ICollection<int> RightPlayerIds, bool hasDuplicates)
     {
-        if (RightPlayerIds.Count > 1) hasDuplicates = true;
-        var (game, player) = await GetGameAndPlayer(Context.ConnectionId);
+        if (RightPlayerIds.Count > 1)
+        {
+            hasDuplicates = true;
+        }
+
+        var (game, player) = await GetGameAndPlayer(Context.ConnectionId).ConfigureAwait(false);
         if (game.CurrentRound!.DasherId != player.Id)
         {
             throw new ArgumentException("Only dasher can valuate explanations");
         }
         foreach (var playerId in RightPlayerIds)
         {
-            await _uow.PlayerRepository.GivePointsAsync(playerId, 2);
-            await _uow.ExplanationRepository.RemoveExplanationAsync(playerId, game.CurrentRound.Id);
+            await _uow.PlayerRepository.GivePointsAsync(playerId, 2).ConfigureAwait(false);
+            await _uow.ExplanationRepository.RemoveExplanationAsync(playerId, game.CurrentRound.Id).ConfigureAwait(false);
         }
 
         if (hasDuplicates)
         {
-            await EndRound();
+            await EndRound().ConfigureAwait(false);
             return;
         }
         game.GameState = GameState.VotingExplanations;
         _uow.GameRepository.Update(game);
 
-        var round = await _uow.RoundRepository.GetRoundWithExplanationsAsync(game.CurrentRound!.Id);
+        var round = await _uow.RoundRepository.GetRoundWithExplanationsAsync(game.CurrentRound!.Id).ConfigureAwait(false);
 
         var dasherTask = Clients.Client(player.ConnectionId).SendAsync("WaitResults");
         var playersTask = Clients.GroupExcept(game.Name, player.ConnectionId).SendAsync("VoteExplanations", _mapper.Map<ICollection<VoteExplanationDto>>(round!.Explanations));
@@ -290,12 +280,8 @@ public class GameHub : Hub
 
     public async Task CastVote(int explanationId)
     {
-        var (game, player) = await GetGameAndPlayer(Context.ConnectionId);
-        var explanation = await _uow.ExplanationRepository.GetExplanationAsync(explanationId);
-        if (explanation == null)
-        {
-            throw new ArgumentException("Invalid explanation id", nameof(explanationId));
-        }
+        var (game, player) = await GetGameAndPlayer(Context.ConnectionId).ConfigureAwait(false);
+        var explanation = await _uow.ExplanationRepository.GetExplanationAsync(explanationId).ConfigureAwait(false) ?? throw new ArgumentException("Invalid explanation id", nameof(explanationId));
         var vote = new Vote
         {
             ExplanationId = explanation.Id,
@@ -303,27 +289,26 @@ public class GameHub : Hub
             RoundId = game.CurrentRound!.Id
         };
         _uow.VoteRepository.AddVote(vote);
-        if (await _uow.Complete())
+        if (await _uow.Complete().ConfigureAwait(false))
         {
-            await Clients.Group(game.Name).SendAsync("VoteCast", player.Username);
+            await Clients.Group(game.Name).SendAsync("VoteCast", player.Username).ConfigureAwait(false);
             if (game.CurrentRound!.Votes.Count == game.CurrentRound!.Explanations.Count - 1)
             {
-                await EndRound();
+                await EndRound().ConfigureAwait(false);
             }
         }
     }
 
-
     public async Task EndRound()
     {
-        var (game, _) = await GetGameAndPlayer(Context.ConnectionId);
-        await CalculatePoints(game.CurrentRound!);
+        var (game, _) = await GetGameAndPlayer(Context.ConnectionId).ConfigureAwait(false);
+        await CalculatePoints(game.CurrentRound!).ConfigureAwait(false);
         game.CurrentRound!.IsCurrent = false;
         _uow.RoundRepository.Update(game.CurrentRound!);
         game.GameState = GameState.WaitingDasher;
         _uow.GameRepository.Update(game);
         var nextDasher = GetNextDasher(game);
-        if (await _uow.Complete())
+        if (await _uow.Complete().ConfigureAwait(false))
         {
             var waitDasherTask = Clients.GroupExcept(game.Name, nextDasher.ConnectionId).SendAsync("WaitDasher", nextDasher.Username);
             var startRoundTask = Clients.Client(nextDasher.ConnectionId).SendAsync("StartRound");
@@ -333,28 +318,28 @@ public class GameHub : Hub
 
     private async Task CalculatePoints(Round round)
     {
-        var explanations = await _uow.ExplanationRepository.GetRoundExplanationsWithVotesAsync(round.Id);
+        var explanations = await _uow.ExplanationRepository.GetRoundExplanationsWithVotesAsync(round.Id).ConfigureAwait(false);
         var rightExplanation = explanations.FirstOrDefault(e => e.IsRight);
         var rightVotesCount = rightExplanation!.Votes.Count;
         if (rightVotesCount == 0)
         {
-            await _uow.PlayerRepository.GivePointsAsync(round.DasherId, 2);
-            await _uow.Complete();
+            await _uow.PlayerRepository.GivePointsAsync(round.DasherId, 2).ConfigureAwait(false);
+            await _uow.Complete().ConfigureAwait(false);
             return;
         }
 
         foreach (var vote in rightExplanation.Votes)
         {
-            await _uow.PlayerRepository.GivePointsAsync(vote.PlayerId, 1);
+            await _uow.PlayerRepository.GivePointsAsync(vote.PlayerId, 1).ConfigureAwait(false);
         }
         foreach (var explanation in explanations.Where(e => !e.IsRight && e.Votes.Count > 0))
         {
             foreach (var vote in explanation.Votes)
             {
-                await _uow.PlayerRepository.GivePointsAsync(explanation.PlayerId, 1);
+                await _uow.PlayerRepository.GivePointsAsync(explanation.PlayerId, 1).ConfigureAwait(false);
             }
         }
-        await _uow.Complete();
+        await _uow.Complete().ConfigureAwait(false);
     }
 
     private static Player GetNextDasher(Game game)
@@ -374,27 +359,15 @@ public class GameHub : Hub
         return nextDasher;
     }
 
-
-
     private async Task<Tuple<Game, Player>> GetGameAndPlayer(string connectionId)
     {
-        var player = await _uow.PlayerRepository.GetPlayerByConnIdAsync(connectionId);
-        if (player == null)
-        {
-            throw new InvalidOperationException("Player not found for connection ID: " + connectionId);
-        }
+        var player = await _uow.PlayerRepository.GetPlayerByConnIdAsync(connectionId).ConfigureAwait(false) ?? throw new InvalidOperationException("Player not found for connection ID: " + connectionId);
         if (player.GameId == null)
         {
             throw new InvalidOperationException("Player is not in any game");
         }
 
-        var game = await _uow.GameRepository.GetWholeGameAsync(player.GameId.Value);
-
-        if (game == null)
-        {
-            throw new InvalidOperationException("Game not found for connection ID: " + connectionId);
-        }
-
+        var game = await _uow.GameRepository.GetWholeGameAsync(player.GameId.Value).ConfigureAwait(false) ?? throw new InvalidOperationException("Game not found for connection ID: " + connectionId);
         return new Tuple<Game, Player>(game, player);
     }
 
