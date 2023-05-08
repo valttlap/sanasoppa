@@ -1,7 +1,0 @@
-{
-    "sonarlint.connectedMode.project": {
-        "connectionId": "valttlap",
-        "projectKey": "valttlap_sanasoppa_backend"
-    },
-    "docwriter.style": "Auto-detect"
-}
