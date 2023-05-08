@@ -30,7 +30,7 @@ var dataSourceBuilder = new NpgsqlDataSourceBuilder(connString);
 dataSourceBuilder.MapEnum<GameState>();
 
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
-await using var dataSource = dataSourceBuilder.Build();
+var dataSource = dataSourceBuilder.Build();
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
 
 builder.Services.AddDbContext<DataContext>(opt =>
