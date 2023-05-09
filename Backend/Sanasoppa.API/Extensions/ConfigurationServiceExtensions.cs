@@ -11,7 +11,7 @@ public static class ConfigurationServiceExtensions
         this IServiceCollection services,
         IConfiguration config)
     {
-        services.Configure<JwtSettings>(config.GetSection("JwtSettings"));
+        services.Configure<Auth0Settings>(config.GetSection("Auth0"));
         services.Configure<ReCaptchaSettings>(config.GetSection("ReCaptchaSettings"));
         return services;
     }

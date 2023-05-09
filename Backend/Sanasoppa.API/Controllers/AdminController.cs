@@ -1,21 +1,25 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Auth0.ManagementApi;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Sanasoppa.API.Controllers;
 public class AdminController : BaseApiController
 {
-    public AdminController()
+    private readonly IManagementApiClient _managementApiClient;
+
+    public AdminController(IManagementApiClient managementApiClient)
     {
+        _managementApiClient = managementApiClient;
     }
 
     [Authorize(Policy = "RequireAdminRole")]
-    [HttpGet("users-with-roles")]
+    [HttpGet("users")]
     public Task<ActionResult> GetUsersWithRoles()
     {
-        throw new NotImplementedException();
+         var users = await _managementApiClient.Users.GetAllAsync(new GetUsersRequest(), new PaginationInfo());
     }
 
     [Authorize(Policy = "RequireAdminRole")]
