@@ -13,7 +13,7 @@ public class ErrorHandlerMiddleware
     private readonly ILogger _logger;
     private readonly IHostEnvironment _env;
 
-    public ErrorHandlerMiddleware(RequestDelegate next, ILogger logger, IHostEnvironment env)
+    public ErrorHandlerMiddleware(RequestDelegate next, ILogger<ErrorHandlerMiddleware> logger, IHostEnvironment env)
     {
         _next = next;
         _logger = logger;

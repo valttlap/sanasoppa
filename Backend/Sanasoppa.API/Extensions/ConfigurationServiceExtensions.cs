@@ -13,7 +13,6 @@ public static class ConfigurationServiceExtensions
     {
         services.Configure<JwtSettings>(config.GetSection("JwtSettings"));
         services.Configure<ReCaptchaSettings>(config.GetSection("ReCaptchaSettings"));
-        services.Configure<SendInBlueSettings>(config.GetSection("SendInBlueSettings"));
         return services;
     }
 }

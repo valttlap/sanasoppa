@@ -26,7 +26,6 @@ public static class ApplicationServiceExtension
                     .SetPreflightMaxAge(TimeSpan.FromSeconds(86400));
             });
         });
-        services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IReCaptchaService, ReCaptchaService>();
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         services.AddSignalR();

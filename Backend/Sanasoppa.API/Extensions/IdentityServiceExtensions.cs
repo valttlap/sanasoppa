@@ -1,22 +1,32 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Sanasoppa.API.Authorization;
+using Sanasoppa.API.Exceptions;
+using Sanasoppa.API.Models.Configs;
 
 namespace Sanasoppa.API.Extensions;
 
 public static class IdentityServiceExtensions
 {
-    public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration config)
+    public static readonly RbacRequirement[] auth_admin =
+    {
+        new RbacRequirement("read:users"),
+        new RbacRequirement("update:users"),
+        new RbacRequirement("delete:users")
+
+    };
+    public static IServiceCollection AddIdentityServices(this IServiceCollection services, IWebHostEnvironment env, IConfiguration config)
     {
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
             {
-                options.Authority = config["Auth0:Authority"];
-                options.Audience = config["Auth0:Audience"];
-                options.RequireHttpsMetadata = false;
+                var settings = config.GetSection("Auth0Settings").Get<Auth0Settings>() ?? throw new ConfigurationException("Auth0Settings is not configured");
+                options.Authority = settings.Authority ?? throw new ConfigurationException("Auth0Settings.Authority is not configured");
+                options.Audience = settings.Audience ?? throw new ConfigurationException("Auth0Settings.Audience is not configured");
+                options.RequireHttpsMetadata = !env.IsDevelopment();
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateAudience = true,
@@ -35,29 +45,19 @@ public static class IdentityServiceExtensions
                         }
 
                         return Task.CompletedTask;
-                    },
-                    OnTokenValidated = context =>
-                    {
-                        if (context.Principal != null && context.Principal.Identity != null)
-                        {
-                            var userRoles = context.Principal.FindAll("permissions");
-
-                            if (userRoles != null && context.Principal.Identity is ClaimsIdentity claimsIdentity)
-                            {
-                                claimsIdentity.AddClaims(userRoles);
-                            }
-                        }
-
-                        return Task.CompletedTask;
                     }
                 };
             });
 
         services.AddAuthorization(opt =>
         {
-            opt.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
-            opt.AddPolicy("RequireModeratorRole", policy => policy.RequireRole("Admin", "Moderator"));
-            opt.AddPolicy("RequireMemberRole", policy => policy.RequireRole("Admin", "Moderator", "Member"));
+            opt.AddPolicy("auth0admin", policy =>
+            {
+                foreach (var requirement in auth_admin)
+                {
+                    policy.Requirements.Add(requirement);
+                }
+            });
         });
 
         return services;
