@@ -7,10 +7,10 @@ namespace Sanasoppa.API.Authorization;
 
 public class RbacRequirement : IAuthorizationRequirement
 {
-    public string Permission { get; }
+    public IEnumerable<string> Permissions { get; }
 
-    public RbacRequirement(string permission)
+    public RbacRequirement(params string[] permissions)
     {
-        Permission = permission ?? throw new ArgumentNullException(nameof(permission));
+        Permissions = permissions;
     }
 }

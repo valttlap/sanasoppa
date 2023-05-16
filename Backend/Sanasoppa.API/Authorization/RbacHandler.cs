@@ -9,19 +9,17 @@ public class RbacHandler : AuthorizationHandler<RbacRequirement>
 {
     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RbacRequirement requirement)
     {
-        if (!context.User.HasClaim(c => c.Type == "permissions"))
+        var userPermissions = context.User.FindAll(c => c.Type == "permissions").Select(c => c.Value);
+
+        if (userPermissions == null || !userPermissions.Any())
         {
             return Task.CompletedTask;
         }
 
-        var permission = context.User.FindFirst(c => c.Type == "permissions" && c.Value == requirement.Permission);
-
-        if (permission == null)
+        if (requirement.Permissions.All(permission => userPermissions.Contains(permission)))
         {
-            return Task.CompletedTask;
+            context.Succeed(requirement);
         }
-
-        context.Succeed(requirement);
 
         return Task.CompletedTask;
     }

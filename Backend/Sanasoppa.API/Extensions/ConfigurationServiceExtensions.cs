@@ -12,7 +12,6 @@ public static class ConfigurationServiceExtensions
         IConfiguration config)
     {
         services.Configure<Auth0Settings>(config.GetSection("Auth0"));
-        services.Configure<ReCaptchaSettings>(config.GetSection("ReCaptchaSettings"));
         return services;
     }
 }

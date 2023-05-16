@@ -1,39 +1,60 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Auth0.ManagementApi;
+using Auth0.ManagementApi.Models;
+using Auth0.ManagementApi.Paging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Sanasoppa.API.Interfaces;
 
 namespace Sanasoppa.API.Controllers;
+
 public class AdminController : BaseApiController
 {
-    private readonly IManagementApiClient _managementApiClient;
+    private readonly IAuth0Service _auth0Service;
 
-    public AdminController(IManagementApiClient managementApiClient)
+    public AdminController(IAuth0Service auth0Service)
     {
-        _managementApiClient = managementApiClient;
+        _auth0Service = auth0Service;
     }
 
-    [Authorize(Policy = "RequireAdminRole")]
+    [Authorize(Policy = "CanReadRoles")]
+    [HttpGet("roles")]
+    public async Task<ActionResult<IPagedList<Role>>> GetRoles()
+    {
+        return Ok(await _auth0Service.GetRolesAsync().ConfigureAwait(false));
+    }
+    [Authorize(Policy = "CanReadUsers")]
     [HttpGet("users")]
-    public Task<ActionResult> GetUsersWithRoles()
+    public async Task<ActionResult<IPagedList<User>>> GetUsers()
     {
-         var users = await _managementApiClient.Users.GetAllAsync(new GetUsersRequest(), new PaginationInfo());
+        return Ok(await _auth0Service.GetUsersAsync().ConfigureAwait(false));
     }
-
-    [Authorize(Policy = "RequireAdminRole")]
-    [HttpPost("edit-roles/{username}")]
-    public Task<ActionResult> EditRoles(string username, [FromQuery] string roles)
+    [Authorize(Policy = "CanReadUsers")]
+    [HttpGet("user/{id}")]
+    public async Task<ActionResult<IPagedList<User>>> GetUser(string id)
     {
-        throw new NotImplementedException();
+        return Ok(await _auth0Service.GetUserAsync(id).ConfigureAwait(false));
     }
-
-    [Authorize(Policy = "RequrireAdminRole")]
-    [HttpDelete("delete-user/{username}")]
-    public Task<ActionResult> DeleteUser(string username)
+    [Authorize(Policy = "CanReadUsers")]
+    [HttpGet("user/{id}/roles")]
+    public async Task<ActionResult<IPagedList<User>>> GetUserRoles(string id)
     {
-        throw new NotImplementedException();
+        return Ok(await _auth0Service.GetUserRolesAsync(id).ConfigureAwait(false));
+    }
+    [Authorize(Policy = "CanUpdateUserRoles")]
+    [HttpPost("user/{id}/roles")]
+    public async Task<ActionResult<IPagedList<User>>> AssignRolesToUser(string id, AssignRolesRequest roles)
+    {
+        await _auth0Service.AssignRolesToUserAsync(id, roles).ConfigureAwait(false);
+        return NoContent();
+    }
+    [Authorize(Policy = "CanUpdateUserRoles")]
+    [HttpDelete("user/{id}/roles")]
+    public async Task<ActionResult<IPagedList<User>>> RemoveRolesFromUser(string id, AssignRolesRequest roles)
+    {
+        await _auth0Service.RemoveRolesFromUserAsync(id, roles).ConfigureAwait(false);
+        return NoContent();
     }
 
 }

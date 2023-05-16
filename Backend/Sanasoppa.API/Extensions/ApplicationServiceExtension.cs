@@ -26,10 +26,10 @@ public static class ApplicationServiceExtension
                     .SetPreflightMaxAge(TimeSpan.FromSeconds(86400));
             });
         });
-        services.AddScoped<IReCaptchaService, ReCaptchaService>();
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         services.AddSignalR();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IAuth0Service, Auth0Service>();
         return services;
     }
 }
