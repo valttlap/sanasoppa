@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Sanasoppa.API.Authorization;
 using Sanasoppa.API.Exceptions;
-using Sanasoppa.API.Helpers;
 using Sanasoppa.API.Models.Configs;
 
 namespace Sanasoppa.API.Extensions;

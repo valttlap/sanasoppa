@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Net.Http.Headers;
 using Sanasoppa.API.Data.Repositories;
 using Sanasoppa.API.Exceptions;
 using Sanasoppa.API.Interfaces;
@@ -18,11 +17,9 @@ public static class ApplicationServiceExtension
             options.AddDefaultPolicy(policy =>
             {
                 policy.WithOrigins(config["ClientUrl"] ?? throw new ConfigurationException("ClientUrl is not configured"))
-                    .WithHeaders(new string[] {
-                        HeaderNames.ContentType,
-                        HeaderNames.Authorization,
-                    })
-                    .WithMethods("GET")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials()
                     .SetPreflightMaxAge(TimeSpan.FromSeconds(86400));
             });
         });

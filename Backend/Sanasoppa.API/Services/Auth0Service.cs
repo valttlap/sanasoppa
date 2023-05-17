@@ -4,7 +4,6 @@
 using Auth0.ManagementApi;
 using Auth0.ManagementApi.Models;
 using Auth0.ManagementApi.Paging;
-using Sanasoppa.API.DTOs;
 using Sanasoppa.API.Interfaces;
 
 namespace Sanasoppa.API.Services;

@@ -9,12 +9,7 @@ public static class ClaimsPrincipalExtensions
 {
     public static string? GetUsername(this ClaimsPrincipal user)
     {
-        return user.FindFirst(ClaimTypes.Name)?.Value;
+        return user.FindFirst("https://sanasoppa.fi/nickname")?.Value;
     }
 
-    public static int? GetUserId(this ClaimsPrincipal user)
-    {
-        var userIdString = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return int.TryParse(userIdString, out var userId) ? userId : null;
-    }
 }
