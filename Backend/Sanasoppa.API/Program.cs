@@ -8,8 +8,6 @@ using Sanasoppa.API.Entities;
 using Sanasoppa.API.Extensions;
 using Sanasoppa.API.Hubs;
 
-Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
@@ -42,15 +40,20 @@ builder.Services.AddDbContext<DataContext>(opt =>
 
 var app = builder.Build();
 
-app.UseErrorHandler();
 app.UseSecureHeaders();
 app.UseCors();
+//app.UseErrorHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<GameHub>("hubs/gamehub");
 app.MapHub<LobbyHub>("hubs/lobbyhub");
+if (app.Environment.IsDevelopment())
+{
+    app.UseOpenApi();
+    app.UseSwaggerUi3();
+}
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 try

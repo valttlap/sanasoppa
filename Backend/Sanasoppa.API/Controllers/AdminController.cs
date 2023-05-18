@@ -24,37 +24,48 @@ public class AdminController : BaseApiController
     {
         return Ok(await _auth0Service.GetRolesAsync().ConfigureAwait(false));
     }
+
     [Authorize(Policy = "CanReadUsers")]
     [HttpGet("users")]
     public async Task<ActionResult<IPagedList<User>>> GetUsers()
     {
         return Ok(await _auth0Service.GetUsersAsync().ConfigureAwait(false));
     }
+
     [Authorize(Policy = "CanReadUsers")]
     [HttpGet("user/{id}")]
-    public async Task<ActionResult<IPagedList<User>>> GetUser(string id)
+    public async Task<ActionResult<User>> GetUser(string id)
     {
         return Ok(await _auth0Service.GetUserAsync(id).ConfigureAwait(false));
     }
+
     [Authorize(Policy = "CanReadUsers")]
     [HttpGet("user/{id}/roles")]
-    public async Task<ActionResult<IPagedList<User>>> GetUserRoles(string id)
+    public async Task<ActionResult<IPagedList<Role>>> GetUserRoles(string id)
     {
         return Ok(await _auth0Service.GetUserRolesAsync(id).ConfigureAwait(false));
     }
+
     [Authorize(Policy = "CanUpdateUserRoles")]
     [HttpPost("user/{id}/roles")]
-    public async Task<ActionResult<IPagedList<User>>> AssignRolesToUser(string id, AssignRolesRequest roles)
+    public async Task<IActionResult> AssignRolesToUser(string id, AssignRolesRequest roles)
     {
         await _auth0Service.AssignRolesToUserAsync(id, roles).ConfigureAwait(false);
         return NoContent();
     }
     [Authorize(Policy = "CanUpdateUserRoles")]
     [HttpDelete("user/{id}/roles")]
-    public async Task<ActionResult<IPagedList<User>>> RemoveRolesFromUser(string id, AssignRolesRequest roles)
+    public async Task<IActionResult> RemoveRolesFromUser(string id, AssignRolesRequest roles)
     {
         await _auth0Service.RemoveRolesFromUserAsync(id, roles).ConfigureAwait(false);
         return NoContent();
     }
 
+    [Authorize(Policy = "CanDeleteUsers")]
+    [HttpDelete("user/{id}")]
+    public async Task<IActionResult> DeleteUser(string id)
+    {
+        await _auth0Service.DeletUserAsync(id).ConfigureAwait(false);
+        return NoContent();
+    }
 }

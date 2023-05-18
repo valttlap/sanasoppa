@@ -11,5 +11,8 @@ public static class ClaimsPrincipalExtensions
     {
         return user.FindFirst("https://sanasoppa.fi/nickname")?.Value;
     }
-
+    public static string? GetUserId(this ClaimsPrincipal user)
+    {
+        return user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    }
 }

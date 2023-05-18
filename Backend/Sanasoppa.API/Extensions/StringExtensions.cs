@@ -9,7 +9,7 @@ public static class StringExtensions
 {
     public static string Sanitize(this string str)
     {
-        var pattern = @"[^\w\s.,:;+\-/&'öÖäÄåÅ]";
+        var pattern = @"[^\w\s.,:;+\-\&'öÖäÄåÅ]";
         var sanitized = Regex.Replace(str, pattern, "", RegexOptions.NonBacktracking);
         return sanitized;
     }

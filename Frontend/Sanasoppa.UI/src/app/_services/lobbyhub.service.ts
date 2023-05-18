@@ -18,7 +18,7 @@ export class LobbyHubService {
 
   constructor(private busyService: BusyService, private auth: AuthService) {}
 
-  async startConnection() {
+  async startConnection(): Promise<void> {
     this.busyService.busy();
     try {
       const token = await lastValueFrom(this.auth.getAccessTokenSilently());
@@ -29,7 +29,6 @@ export class LobbyHubService {
         })
         .withAutomaticReconnect()
         .build();
-
       await this.hubConnection.start();
     } catch (err) {
       console.error(err);

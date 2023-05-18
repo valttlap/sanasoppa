@@ -27,28 +27,36 @@ public class ErrorHandlerMiddleware
         {
             await _next(context).ConfigureAwait(false);
 
-            if (context.Response is HttpResponse response && response.StatusCode == (int)HttpStatusCode.NotFound)
+            if (!context.Response.HasStarted)
             {
-                await response.WriteAsJsonAsync(new
+                if (context.Response is HttpResponse response && response.StatusCode == (int)HttpStatusCode.NotFound)
                 {
-                    message = "Not Found"
-                }).ConfigureAwait(false);
+                    await response.WriteAsJsonAsync(new
+                    {
+                        message = "Not Found"
+                    }).ConfigureAwait(false);
+                }
+                else if (context.Response is HttpResponse unauthorizedResponse && unauthorizedResponse.StatusCode == (int)HttpStatusCode.Unauthorized)
+                {
+                    await unauthorizedResponse.WriteAsJsonAsync(new
+                    {
+                        message = context.Request.Headers.ContainsKey("Authorization")
+                                            ? "Bad credentials"
+                                            : "Requires authentication"
+                    }).ConfigureAwait(false);
+                }
+                else if (context.Response is HttpResponse forbiddenResponse && forbiddenResponse.StatusCode == (int)HttpStatusCode.Forbidden)
+                {
+                    await forbiddenResponse.WriteAsJsonAsync(new
+                    {
+                        message = "Forbidden"
+                    }).ConfigureAwait(false);
+                }
             }
-            else if (context.Response is HttpResponse unauthorizedResponse && unauthorizedResponse.StatusCode == (int)HttpStatusCode.Unauthorized)
+            else
             {
-                await unauthorizedResponse.WriteAsJsonAsync(new
-                {
-                    message = context.Request.Headers.ContainsKey("Authorization")
-                                        ? "Bad credentials"
-                                        : "Requires authentication"
-                }).ConfigureAwait(false);
-            }
-            else if (context.Response is HttpResponse forbiddenResponse && forbiddenResponse.StatusCode == (int)HttpStatusCode.Forbidden)
-            {
-                await forbiddenResponse.WriteAsJsonAsync(new
-                {
-                    message = "Forbidden"
-                }).ConfigureAwait(false);
+                // Log the issue or handle it as appropriate for your application
+                _logger.LogWarning("Response has already started, unable to write custom JSON error message.");
             }
         }
         catch (Exception ex)
@@ -60,6 +68,10 @@ public class ErrorHandlerMiddleware
     private async Task HandleExceptionAsync(HttpContext context, Exception ex)
     {
         _logger.LogError(ex, "An exception occurred: {ExceptionMessage}", ex.Message);
+        if (context.Response.HasStarted)
+        {
+            return;
+        }
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 

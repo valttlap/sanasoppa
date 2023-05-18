@@ -34,15 +34,15 @@ export class ListComponent implements OnInit, OnDestroy {
     });
   }
   ngOnDestroy(): void {
-    this.lobbyHubService.disconnect();
+    //this.lobbyHubService.disconnect();
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     if (!this.user) {
       this.router.navigate(['/']);
       return;
     }
-    this.lobbyHubService.startConnection();
+    await this.lobbyHubService.startConnection();
     this.lobbyHub = this.lobbyHubService.getHubConnection();
     this.lobbyHub.on('GameListUpdated', (games: Game[]) =>
       this.updateGames(games)
@@ -71,6 +71,7 @@ export class ListComponent implements OnInit, OnDestroy {
   }
 
   createGame(name: string) {
+    if (!this.lobbyHub) console.error('LobbyHub is not initialized');
     this.lobbyHub
       .invoke('CreateGame', name)
       .then((name: string) => {

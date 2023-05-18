@@ -38,8 +38,8 @@ public interface IGameRepository
     /// <summary>
     /// Get a game by its name with all its players.
     /// </summary>
-    /// <param name="gameName">The name of the game to re
-    /// <returns>Returns the game with the specified name
+    /// <param name="gameName">The name of the game to return.</param>
+    /// <returns>Returns the game with the specified name</returns>
     Task<Game?> GetGameWithPlayersAsync(string gameName);
     Task<Game?> GetWholeGameAsync(int id);
     Task<Game?> GetWholeGameAsync(string gameName);
@@ -108,7 +108,7 @@ public interface IGameRepository
     /// <summary>
     /// Sets the <see cref="Game.HasStarted"/> property to true, indicating that the game has started.
     /// </summary>
-    /// <param name="id">The game to start.</param>
+    /// <param name="game">The game to start.</param>
     void StartGame(Game game);
 
     /// <summary>
