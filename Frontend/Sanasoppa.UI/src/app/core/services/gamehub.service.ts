@@ -3,7 +3,6 @@ import { BusyService } from './busy.service';
 import { Injectable } from '@angular/core';
 import { environment as env } from '../../../environments/environment';
 import {
-  HttpClient,
   HttpTransportType,
   HubConnection,
   HubConnectionBuilder,
@@ -16,13 +15,8 @@ import { AuthService } from '@auth0/auth0-angular';
 export class GameHubService {
   private _hubConnection?: HubConnection;
   private hubUrl = env.api.hubUrl;
-  private apiUrl = env.api.apiUrl;
 
-  constructor(
-    private busyService: BusyService,
-    private http: HttpClient,
-    private auth: AuthService
-  ) {}
+  constructor(private busyService: BusyService, private auth: AuthService) {}
 
   public async startConnection(gameName: string) {
     this.busyService.busy();
