@@ -4,15 +4,22 @@ on:
   push:
     branches:
       - dev
+    paths:
+      - Frontend/**
+      - .github/wokrflows/azure-static-web-apps-agreeable-island-0654f3803.yml
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - dev
+    paths:
+      - Frontend/**
+      - .github/wokrflows/azure-static-web-apps-agreeable-island-0654f3803.yml
 
 jobs:
   build_and_deploy_job:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
+    environment: Staging
     name: Build and Deploy Job
     steps:
       - uses: actions/checkout@v3
@@ -28,9 +35,16 @@ jobs:
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
           app_location: "/Frontend/Sanasoppa.UI" # App source code path
-          api_location: "" # Api source code path - optional
+          app_build_command: "npm run build"
           output_location: "dist/sanasoppa" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
+        env:
+          AUTH0_DOMAIN: ${{ vars.AUTH0_DOMAIN }}
+          AUTH0_CLIENT_ID: ${{ vars.AUTH0_CLIENT_ID }}
+          AUTH0_AUDIENCE: ${{ vars.AUTH0_AUDIENCE }}
+          AUTH0_CALLBACK_URL: ${{ vars.AUTH0_CALLBACK_URL }}
+          API_SERVER_URL: ${{ vars.API_SERVER_URL }}
+          HUB_SERVER_URL: ${{ vars.HUB_SERVER_URL }}
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
