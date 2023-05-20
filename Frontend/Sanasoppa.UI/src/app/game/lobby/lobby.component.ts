@@ -1,6 +1,6 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
-import { GameHubService } from 'src/app/_services/gamehub.service';
+import { GameHubService } from '@app/core';
 import { HubConnection } from '@microsoft/signalr';
 import { take } from 'rxjs';
 import { IPlayer } from 'src/app/_models/IPlayer';

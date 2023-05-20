@@ -1,35 +1,35 @@
 import { BusyService } from './busy.service';
 import { Injectable } from '@angular/core';
-import { AuthService, User } from '@auth0/auth0-angular';
+import { AuthService } from '@auth0/auth0-angular';
 import {
   HttpTransportType,
   HubConnection,
   HubConnectionBuilder,
 } from '@microsoft/signalr';
 import { lastValueFrom } from 'rxjs';
-import { environment } from 'src/environments/environment';
+import { environment as env } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LobbyHubService {
-  private hubConnection?: HubConnection;
-  private hubUrl = environment.api.hubUrl;
+  private _hubConnection?: HubConnection;
+  private _hubUrl = env.api.hubUrl;
 
   constructor(private busyService: BusyService, private auth: AuthService) {}
 
-  async startConnection(): Promise<void> {
+  public async startConnection(): Promise<void> {
     this.busyService.busy();
     try {
       const token = await lastValueFrom(this.auth.getAccessTokenSilently());
-      this.hubConnection = new HubConnectionBuilder()
-        .withUrl(`${this.hubUrl}/lobbyhub`, {
+      this._hubConnection = new HubConnectionBuilder()
+        .withUrl(`${this._hubUrl}/lobbyhub`, {
           accessTokenFactory: () => token,
           transport: HttpTransportType.WebSockets,
         })
         .withAutomaticReconnect()
         .build();
-      await this.hubConnection.start();
+      await this._hubConnection.start();
     } catch (err) {
       console.error(err);
     } finally {
@@ -37,17 +37,17 @@ export class LobbyHubService {
     }
   }
 
-  getHubConnection(): HubConnection {
-    if (!this.hubConnection) {
+  get hubConnection(): HubConnection {
+    if (!this._hubConnection) {
       throw Error('Lobbyhub connection is not initialized');
     }
-    return this.hubConnection;
+    return this._hubConnection;
   }
 
-  disconnect(): Promise<void> {
-    if (!this.hubConnection) {
+  public disconnect(): Promise<void> {
+    if (!this._hubConnection) {
       throw Error('Lobbyhub connection is not initialized');
     }
-    return this.hubConnection.stop();
+    return this._hubConnection.stop();
   }
 }
