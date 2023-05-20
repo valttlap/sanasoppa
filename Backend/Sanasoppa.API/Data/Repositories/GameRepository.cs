@@ -1,4 +1,7 @@
-﻿using AutoMapper;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Sanasoppa.API.DTOs;
@@ -24,33 +27,35 @@ public class GameRepository : IGameRepository
 
     public void AddPlayerToGame(Game game, Player player)
     {
-        if (game.Players.Any(p => p.Id == player.Id)) return;
+        if (game.Players.Any(p => p.Id == player.Id))
+        {
+            return;
+        }
+
         game.Players.Add(player);
         Update(game);
     }
 
-
     public async Task AddPlayerToGameAsync(Game game, string playerName)
     {
-        if (game.Players.Any(p => p.Username == playerName)) return;
-
-        var playerToAdd = await _context.Players.Where(p => p.Username == playerName).SingleOrDefaultAsync();
-        if (playerToAdd == null)
+        if (game.Players.Any(p => p.Username == playerName))
         {
-            throw new InvalidOperationException($"Player {playerName} doesn't exists");
+            return;
         }
+
+        var playerToAdd = await _context.Players.Where(p => p.Username == playerName).SingleOrDefaultAsync().ConfigureAwait(false) ?? throw new InvalidOperationException($"Player {playerName} doesn't exists");
         game.Players.Add(playerToAdd);
         Update(game);
     }
 
     public async Task<bool> GameExistsAsync(int id)
     {
-        return await _context.Games.FindAsync(id) != null;
+        return await _context.Games.FindAsync(id).ConfigureAwait(false) != null;
     }
 
     public async Task<bool> GameExistsAsync(string gameName)
     {
-        return await _context.Games.AnyAsync(g => g.Name == gameName);
+        return await _context.Games.AnyAsync(g => g.Name == gameName).ConfigureAwait(false);
     }
 
     public async Task<Player?> GetDasherAsync(Game game)
@@ -58,23 +63,23 @@ public class GameRepository : IGameRepository
         var round = await _context.Rounds
             .Include(r => r.Dasher)
             .Where(r => r.IsCurrent && r.GameId == game.Id)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync().ConfigureAwait(false);
         return round?.Dasher;
     }
 
     public async Task<Game?> GetGameAsync(int id)
     {
-        return await _context.Games.FindAsync(id);
+        return await _context.Games.FindAsync(id).ConfigureAwait(false);
     }
 
     public async Task<Game?> GetGameAsync(string gameName)
     {
-        return await _context.Games.Where(g => g.Name == gameName).SingleOrDefaultAsync();
+        return await _context.Games.Where(g => g.Name == gameName).SingleOrDefaultAsync().ConfigureAwait(false);
     }
 
     public async Task<IEnumerable<Game?>> GetGamesAsync()
     {
-        return await _context.Games.ToListAsync();
+        return await _context.Games.ToListAsync().ConfigureAwait(false);
     }
 
     public async Task<Game?> GetGameWithPlayersAsync(int id)
@@ -82,7 +87,7 @@ public class GameRepository : IGameRepository
         return await _context.Games
             .Include(g => g.Players)
             .Where(g => g.Id == id)
-            .SingleOrDefaultAsync();
+            .SingleOrDefaultAsync().ConfigureAwait(false);
     }
 
     public async Task<Game?> GetGameWithPlayersAsync(string gameName)
@@ -90,7 +95,7 @@ public class GameRepository : IGameRepository
         return await _context.Games
             .Include(g => g.Players)
             .Where(g => g.Name == gameName)
-            .SingleOrDefaultAsync();
+            .SingleOrDefaultAsync().ConfigureAwait(false);
     }
 
     public async Task<IEnumerable<GameDto?>> GetNotStartedGamesAsync()
@@ -99,7 +104,7 @@ public class GameRepository : IGameRepository
             .Include(g => g.Players)
             .Where(g => g.GameState == GameState.NotStarted)
             .ProjectTo<GameDto>(_mapper.ConfigurationProvider)
-            .ToListAsync();
+            .ToListAsync().ConfigureAwait(false);
     }
 
     public async Task<Game?> GetWholeGameAsync(int id)
@@ -108,7 +113,7 @@ public class GameRepository : IGameRepository
             .Include(g => g.Players)
             .Include(g => g.Rounds)
             .Where(g => g.Id == id)
-            .SingleOrDefaultAsync();
+            .SingleOrDefaultAsync().ConfigureAwait(false);
     }
 
     public async Task<Game?> GetWholeGameAsync(string gameName)
@@ -117,7 +122,7 @@ public class GameRepository : IGameRepository
             .Include(g => g.Players)
             .Include(g => g.Rounds)
             .Where(g => g.Name == gameName)
-            .SingleOrDefaultAsync();
+            .SingleOrDefaultAsync().ConfigureAwait(false);
     }
 
     public bool HasGameEnded(Game game)
@@ -132,11 +137,7 @@ public class GameRepository : IGameRepository
 
     public void RemovePlayerFromGame(Game game, string playerName)
     {
-        var playerToRemove = game.Players.FirstOrDefault(p => p.Username == playerName);
-        if (playerToRemove == null)
-        {
-            throw new InvalidOperationException($"Player {playerName} is not in the game");
-        }
+        var playerToRemove = game.Players.FirstOrDefault(p => p.Username == playerName) ?? throw new InvalidOperationException($"Player {playerName} is not in the game");
         game.Players.Remove(playerToRemove);
         Update(game);
     }

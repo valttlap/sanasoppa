@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.EntityFrameworkCore;
 using Sanasoppa.API.Entities;
 using Sanasoppa.API.Interfaces;
@@ -14,11 +17,7 @@ public class RoundRepository : IRoundRepository
 
     public async Task AddExplanationAsync(int roundId, Explanation explanation)
     {
-        var round = await _context.Rounds.FindAsync(roundId);
-        if (round == null)
-        {
-            throw new ArgumentException("The round does not exist.", nameof(roundId));
-        }
+        var round = await _context.Rounds.FindAsync(roundId).ConfigureAwait(false) ?? throw new ArgumentException("The round does not exist.", nameof(roundId));
         round.Explanations.Add(explanation);
         Update(round);
     }
@@ -47,7 +46,7 @@ public class RoundRepository : IRoundRepository
     {
         return await _context.Rounds
             .Include(r => r.Explanations)
-            .FirstOrDefaultAsync(r => r.Id == roundId);
+            .FirstOrDefaultAsync(r => r.Id == roundId).ConfigureAwait(false);
     }
 
 }

@@ -1,4 +1,7 @@
-﻿using Sanasoppa.API.DTOs;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Sanasoppa.API.DTOs;
 using Sanasoppa.API.Entities;
 
 namespace Sanasoppa.API.Interfaces;
@@ -35,8 +38,8 @@ public interface IGameRepository
     /// <summary>
     /// Get a game by its name with all its players.
     /// </summary>
-    /// <param name="gameName">The name of the game to re
-    /// <returns>Returns the game with the specified name
+    /// <param name="gameName">The name of the game to return.</param>
+    /// <returns>Returns the game with the specified name</returns>
     Task<Game?> GetGameWithPlayersAsync(string gameName);
     Task<Game?> GetWholeGameAsync(int id);
     Task<Game?> GetWholeGameAsync(string gameName);
@@ -47,14 +50,12 @@ public interface IGameRepository
     /// <returns>Returns a collection of all games that have not started yet.</returns>
     Task<IEnumerable<GameDto?>> GetNotStartedGamesAsync();
 
-
     /// <summary>
     /// Get the dasher in a game.
     /// </summary>
     /// <param name="game">The game object to retrieve the dasher for.</param>
     /// <returns>Returns the dasher in the specified game, or null if the game does not exist or has no dasher.</returns>
     Task<Player?> GetDasherAsync(Game game);
-
 
     /// <summary>
     /// Check if a game with the id exists.
@@ -107,7 +108,7 @@ public interface IGameRepository
     /// <summary>
     /// Sets the <see cref="Game.HasStarted"/> property to true, indicating that the game has started.
     /// </summary>
-    /// <param name="id">The game to start.</param>
+    /// <param name="game">The game to start.</param>
     void StartGame(Game game);
 
     /// <summary>

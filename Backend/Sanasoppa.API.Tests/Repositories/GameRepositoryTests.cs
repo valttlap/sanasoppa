@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using AutoMapper;
 using Bogus;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +20,7 @@ public class GameRepositoryTests
     private DataContext? _context;
     private IGameRepository? _repository;
     private IMapper? _mapper;
-    private Faker _faker = new("fi");
+    private readonly Faker _faker = new("fi");
 
     [SetUp]
     public void Setup()
@@ -28,7 +31,7 @@ public class GameRepositoryTests
         _repository = new GameRepository(_context, _mapper);
     }
 
-    private IMapper ConfigureMapper()
+    private static IMapper ConfigureMapper()
     {
         var mapperConfig = new MapperConfiguration(cfg =>
         {
@@ -36,7 +39,6 @@ public class GameRepositoryTests
         });
         return mapperConfig.CreateMapper();
     }
-
 
     [TearDown]
     public async Task TearDownAsync()
@@ -46,7 +48,7 @@ public class GameRepositoryTests
             entity.State = EntityState.Detached;
         }
 
-        await _context!.Database.EnsureDeletedAsync();
+        await _context!.Database.EnsureDeletedAsync().ConfigureAwait(false);
 
         _context!.Dispose();
     }
@@ -60,20 +62,22 @@ public class GameRepositoryTests
         var game3 = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
 
         _context!.Games.AddRange(game1, game2, game3);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         IEnumerable<Game?> result;
-        result = await _repository!.GetGamesAsync();
+        result = await _repository!.GetGamesAsync().ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Count(), Is.EqualTo(3));
-        Assert.That(result, Has.Some.Matches<Game?>(g => g?.Id == 1 && g.Name == game1.Name && g.GameState == GameState.NotStarted));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Count(), Is.EqualTo(3));
+            Assert.That(result, Has.Some.Matches<Game?>(g => g?.Id == 1 && g.Name == game1.Name && g.GameState == GameState.NotStarted));
+        });
         Assert.That(result, Has.Some.Matches<Game?>(g => g?.Id == 2 && g.Name == game2.Name && g.GameState == GameState.NotStarted));
         Assert.That(result, Has.Some.Matches<Game?>(g => g?.Id == 3 && g.Name == game3.Name && g.GameState == GameState.NotStarted));
     }
-
 
     [Test]
     public async Task GetGameAsync_ShouldReturnGameById()
@@ -81,17 +85,20 @@ public class GameRepositoryTests
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
-        result = await _repository!.GetGameAsync(1);
+        result = await _repository!.GetGameAsync(1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Id, Is.EqualTo(1));
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+        });
     }
 
     [Test]
@@ -100,17 +107,20 @@ public class GameRepositoryTests
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
-        result = await _repository!.GetGameAsync(game.Name);
+        result = await _repository!.GetGameAsync(game.Name).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Id, Is.EqualTo(1));
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+        });
     }
 
     [Test]
@@ -128,20 +138,26 @@ public class GameRepositoryTests
         };
         game.Players.Add(player);
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
-        result = await _repository!.GetGameWithPlayersAsync(1);
+        result = await _repository!.GetGameWithPlayersAsync(1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
-        Assert.That(result.Players, Is.Not.Null);
-        Assert.That(result.Players.Count(), Is.EqualTo(1));
-        Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints && p.GameId == result.Id));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Id, Is.EqualTo(1));
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+            Assert.That(result.Players, Is.Not.Null);
+        });
+        Assert.Multiple(() =>
+        {
+            Assert.That(result?.Players, Has.Count.EqualTo(1));
+            Assert.That(result?.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints && p.GameId == result?.Id));
+        });
     }
 
     [Test]
@@ -159,20 +175,23 @@ public class GameRepositoryTests
         };
         game.Players.Add(player);
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
-        result = await _repository!.GetGameWithPlayersAsync(game.Name);
+        result = await _repository!.GetGameWithPlayersAsync(game.Name).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
-        Assert.That(result.Players, Is.Not.Null);
-        Assert.That(result.Players.Count(), Is.EqualTo(1));
-        Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints && p.GameId == result.Id));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Id, Is.EqualTo(1));
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+            Assert.That(result.Players, Is.Not.Null);
+        });
+        Assert.That(result?.Players, Has.Count.EqualTo(1));
+        Assert.That(result?.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints && p.GameId == result?.Id));
     }
 
     [Test]
@@ -197,22 +216,28 @@ public class GameRepositoryTests
         game.Players.Add(player);
         game.Rounds.Add(round);
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
-        result = await _repository!.GetWholeGameAsync(1);
+        result = await _repository!.GetWholeGameAsync(1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
-        Assert.That(result.Players, Is.Not.Null);
-        Assert.That(result.Players.Count(), Is.EqualTo(1));
-        Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints));
-        Assert.That(result.Rounds, Is.Not.Null);
-        Assert.That(result.Rounds.Count(), Is.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+            Assert.That(result.Players, Is.Not.Null);
+        });
+        Assert.That(result.Players, Has.Count.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints));
+            Assert.That(result.Rounds, Is.Not.Null);
+        });
+        Assert.That(result.Rounds, Has.Count.EqualTo(1));
         Assert.That(result.Rounds, Has.Some.Matches<Round>(r => r.Id == 1 && r.Word == round.Word && r.GameId == round.GameId && r.IsCurrent == round.IsCurrent));
     }
 
@@ -238,23 +263,29 @@ public class GameRepositoryTests
         game.Players.Add(player);
         game.Rounds.Add(round);
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
-        result = await _repository!.GetWholeGameAsync(game.Name);
+        result = await _repository!.GetWholeGameAsync(game.Name).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
-        Assert.That(result.Players, Is.Not.Null);
-        Assert.That(result.Players.Count(), Is.EqualTo(1));
-        Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints));
-        Assert.That(result.Rounds, Is.Not.Null);
-        Assert.That(result.Rounds.Count(), Is.EqualTo(1));
-        Assert.That(result.Rounds, Has.Some.Matches<Round>(r => r.Id == 1 && r.Word == round.Word && r.GameId == round.GameId && r.IsCurrent == round.IsCurrent));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Id, Is.EqualTo(1));
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+            Assert.That(result.Players, Is.Not.Null);
+        });
+        Assert.That(result?.Players, Has.Count.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result?.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints));
+            Assert.That(result?.Rounds, Is.Not.Null);
+        });
+        Assert.That(result?.Rounds.Count, Is.EqualTo(1));
+        Assert.That(result?.Rounds, Has.Some.Matches<Round>(r => r.Id == 1 && r.Word == round.Word && r.GameId == round.GameId && r.IsCurrent == round.IsCurrent));
     }
 
     [Test]
@@ -277,16 +308,19 @@ public class GameRepositoryTests
         game1.Players.Add(player);
 
         _context!.Games.AddRange(game1, game2, game3);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         IEnumerable<GameDto?> result;
-        result = await _repository!.GetNotStartedGamesAsync();
+        result = await _repository!.GetNotStartedGamesAsync().ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Count(), Is.EqualTo(1));
-        Assert.That(result, Has.Some.Matches<GameDto>(g => g.Name == game1!.Name && g.Players == 1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Count(), Is.EqualTo(1));
+            Assert.That(result, Has.Some.Matches<GameDto>(g => g.Name == game1!.Name && g.Players == 1));
+        });
     }
 
     [Test]
@@ -320,19 +354,21 @@ public class GameRepositoryTests
         game.Players.Add(player2);
         game.Rounds.Add(round);
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Player? result;
-        result = await _repository!.GetDasherAsync(game);
+        result = await _repository!.GetDasherAsync(game).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Username, Is.EqualTo(player.Username));
-        Assert.That(result.ConnectionId, Is.EqualTo(player.ConnectionId));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Id, Is.EqualTo(1));
+            Assert.That(result.Username, Is.EqualTo(player.Username));
+            Assert.That(result.ConnectionId, Is.EqualTo(player.ConnectionId));
+        });
     }
-
 
     [Test]
     public async Task GameExistsAsync_ShouldReturnTrueIfGameExists()
@@ -340,10 +376,10 @@ public class GameRepositoryTests
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
         // Act
         bool result;
-        result = await _repository!.GameExistsAsync(1);
+        result = await _repository!.GameExistsAsync(1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.True);
@@ -355,11 +391,11 @@ public class GameRepositoryTests
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         bool result;
-        result = await _repository!.GameExistsAsync(2);
+        result = await _repository!.GameExistsAsync(2).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.False);
@@ -377,16 +413,18 @@ public class GameRepositoryTests
 
         // Act
         _repository!.AddGame(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
         Game? result;
-        result = await _context!.Games.FindAsync(1);
+        result = await _context!.Games.FindAsync(1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
-
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+        });
     }
 
     [Test]
@@ -407,19 +445,22 @@ public class GameRepositoryTests
             TotalPoints = 0
         };
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         _repository!.AddPlayerToGame(game, player);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
         Game? result;
-        result = await _context!.Games.Include(g => g.Players).FirstOrDefaultAsync(g => g.Id == 1);
+        result = await _context!.Games.Include(g => g.Players).FirstOrDefaultAsync(g => g.Id == 1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Players, Is.Not.Null);
-        Assert.That(result.Players.Count(), Is.EqualTo(1));
-        Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Players, Is.Not.Null);
+            Assert.That(result.Players, Has.Count.EqualTo(1));
+            Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints));
+        });
     }
 
     [Test]
@@ -441,7 +482,7 @@ public class GameRepositoryTests
         };
         game.Players.Add(player);
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         bool result;
@@ -470,7 +511,7 @@ public class GameRepositoryTests
         };
         game.Players.Add(player);
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         bool result;
@@ -499,19 +540,22 @@ public class GameRepositoryTests
         };
         _context!.Games.Add(game);
         _context!.Players.Add(player);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
-        await _repository!.AddPlayerToGameAsync(game, player.Username);
-        await _context!.SaveChangesAsync();
+        await _repository!.AddPlayerToGameAsync(game, player.Username).ConfigureAwait(false);
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
         Game? result;
-        result = await _context!.Games.Include(g => g.Players).FirstOrDefaultAsync(g => g.Id == 1);
+        result = await _context!.Games.Include(g => g.Players).FirstOrDefaultAsync(g => g.Id == 1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Players, Is.Not.Null);
-        Assert.That(result.Players.Count(), Is.EqualTo(1));
-        Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Players, Is.Not.Null);
+            Assert.That(result.Players, Has.Count.EqualTo(1));
+            Assert.That(result.Players, Has.Some.Matches<Player>(p => p.Id == 1 && p.Username == player.Username && p.ConnectionId == player.ConnectionId && p.IsHost == player.IsHost && p.IsOnline == player.IsOnline && p.TotalPoints == player.TotalPoints));
+        });
     }
 
     [Test]
@@ -529,20 +573,23 @@ public class GameRepositoryTests
         };
         game.Players.Add(player);
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
         _repository!.RemovePlayerFromGame(game, player.Username);
-        await _context!.SaveChangesAsync();
-        result = await _context.Games.FindAsync(1);
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
+        result = await _context.Games.FindAsync(1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
-        Assert.That(result.Players.Count(), Is.EqualTo(0));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Id, Is.EqualTo(1));
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.NotStarted));
+            Assert.That(result.Players, Is.Empty);
+        });
     }
 
     [Test]
@@ -551,19 +598,22 @@ public class GameRepositoryTests
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
         _repository!.StartGame(game);
-        await _context!.SaveChangesAsync();
-        result = await _context.Games.FindAsync(1);
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
+        result = await _context.Games.FindAsync(1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Id, Is.EqualTo(1));
-        Assert.That(result.Name, Is.EqualTo(game.Name));
-        Assert.That(result.GameState, Is.EqualTo(GameState.WaitingDasher));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Id, Is.EqualTo(1));
+            Assert.That(result.Name, Is.EqualTo(game.Name));
+            Assert.That(result.GameState, Is.EqualTo(GameState.WaitingDasher));
+        });
     }
 
     [Test]
@@ -572,20 +622,16 @@ public class GameRepositoryTests
         // Arrange
         var game = new Game { Name = _faker.Lorem.Word(), GameState = GameState.NotStarted };
         _context!.Games.Add(game);
-        await _context!.SaveChangesAsync();
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
 
         // Act
         Game? result;
         _repository!.RemoveGame(game);
-        await _context!.SaveChangesAsync();
-        result = await _context.Games.FindAsync(1);
+        await _context!.SaveChangesAsync().ConfigureAwait(false);
+        result = await _context.Games.FindAsync(1).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.Null);
     }
-
-
-
-
 
 }

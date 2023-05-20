@@ -1,4 +1,7 @@
-﻿using AutoMapper;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sanasoppa.API.DTOs;
@@ -25,7 +28,7 @@ public class GameController : BaseApiController
     [HttpGet("{gameName}")]
     public async Task<ActionResult<GameDto>> GetGame(string gameName)
     {
-        var game = await _uow.GameRepository.GetGameAsync(gameName);
+        var game = await _uow.GameRepository.GetGameAsync(gameName).ConfigureAwait(false);
         if (game == null)
         {
             return NotFound();
@@ -34,7 +37,6 @@ public class GameController : BaseApiController
         return Ok(gameDto);
     }
 
-
     /// <summary>
     /// Retrieves a list of games that have not yet started.
     /// </summary>
@@ -42,7 +44,7 @@ public class GameController : BaseApiController
     [HttpGet("not-started")]
     public async Task<ActionResult<GameDto>> GetNotStartedGames()
     {
-        var games = await _uow.GameRepository.GetNotStartedGamesAsync();
+        var games = await _uow.GameRepository.GetNotStartedGamesAsync().ConfigureAwait(false);
 
         return Ok(games);
     }
@@ -55,11 +57,12 @@ public class GameController : BaseApiController
     [HttpGet("players/{gameName}")]
     public async Task<ActionResult<ICollection<PlayerDto>>> GetGamePlayers(string gameName)
     {
-        var game = await _uow.GameRepository.GetGameWithPlayersAsync(gameName);
+        var game = await _uow.GameRepository.GetGameWithPlayersAsync(gameName).ConfigureAwait(false);
         if (game == null)
         {
             return NotFound("Game not found");
         }
-        return Ok(_mapper.Map<ICollection<PlayerDto>>(game));
+        return Ok(
+            _mapper.Map<ICollection<PlayerDto>>(game));
     }
 }

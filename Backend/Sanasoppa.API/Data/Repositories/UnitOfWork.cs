@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Sanasoppa.API.Entities;
@@ -24,12 +27,10 @@ public class UnitOfWork : IUnitOfWork
     public IExplanationRepository ExplanationRepository => new ExplanationRepository(_context);
     public IVoteRepository VoteRepository => new VoteRepository(_context);
 
-
-
     public async Task<bool> Complete()
     {
         var hasGameChanges = HasGameChanged();
-        var saved = await _context.SaveChangesAsync() > 0;
+        var saved = await _context.SaveChangesAsync().ConfigureAwait(false) > 0;
         if (saved && hasGameChanges)
         {
             OnGameListChanged(new GameListChangedEventArgs(Enumerable.Empty<Game>()));

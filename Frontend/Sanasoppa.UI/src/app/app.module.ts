@@ -7,7 +7,6 @@ import { AppComponent } from './app.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
 import { LobbyComponent } from './game/lobby/lobby.component';
-import { GameHubService } from './_services/gamehub.service';
 import { ErrorComponent } from './components/error/error.component';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ListComponent } from './game/list/list.component';
@@ -52,7 +51,6 @@ import { environment as env } from '../environments/environment';
     RecaptchaV3Module,
   ],
   providers: [
-    GameHubService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: AuthHttpInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: LoadingInterceptor, multi: true },
