@@ -1,6 +1,6 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
-import { GameHubService } from '@app/core';
+import { GameHubService, GameService } from '@app/core';
 import { HubConnection } from '@microsoft/signalr';
 import { take } from 'rxjs';
 import { IPlayer } from 'src/app/_models/IPlayer';
@@ -22,6 +22,7 @@ export class LobbyComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private gameHubService: GameHubService,
+    private gameService: GameService,
     private auth: AuthService
   ) {
     this.auth.user$.pipe(take(1)).subscribe({
@@ -42,7 +43,7 @@ export class LobbyComponent implements OnInit {
       return;
     }
     this.name = name;
-    this.gameHubService.getGame(this.name).subscribe({
+    this.gameService.getGame(this.name).subscribe({
       next: game => {
         this.game = game;
       },
@@ -52,7 +53,7 @@ export class LobbyComponent implements OnInit {
     });
     try {
       this.gameHubService.startConnection(this.name);
-      this.gameHub = this.gameHubService.getHubConnection();
+      this.gameHub = this.gameHubService.hubConnection;
     } catch (e) {
       this.router.navigate(['/error', e]);
     }
@@ -64,7 +65,7 @@ export class LobbyComponent implements OnInit {
   }
 
   refeshPlayers() {
-    this.gameHubService.getPlayersInGame(this.name).subscribe({
+    this.gameService.getPlayersInGame(this.name).subscribe({
       next: players => (this.players = players),
       error: error => console.error(error),
     });

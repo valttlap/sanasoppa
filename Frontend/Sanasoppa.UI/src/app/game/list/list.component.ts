@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { GameService } from './../../core/services/game.service';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HubConnection } from '@microsoft/signalr';
 import { take } from 'rxjs';
@@ -23,6 +24,7 @@ export class ListComponent implements OnInit {
     private route: ActivatedRoute,
     private lobbyHubService: LobbyHubService,
     private gameHubService: GameHubService,
+    private gameService: GameService,
     private auth: AuthService,
     private modalService: NgbModal
   ) {
@@ -43,7 +45,7 @@ export class ListComponent implements OnInit {
     this.lobbyHub.on('GameListUpdated', (games: Game[]) =>
       this.updateGames(games)
     );
-    this.gameHubService.getNotStartedGames().subscribe({
+    this.gameService.getNotStartedGames().subscribe({
       next: games => this.updateGames(games),
       error: error => console.error(error),
     });
