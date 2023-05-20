@@ -4,12 +4,21 @@ const dotenv = require('dotenv');
 const { writeFile } = require('fs');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { promisify } = require('util');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { mkdir } = require('fs');
 
 dotenv.config();
 
 const writeFilePromisified = promisify(writeFile);
 
-const targetPath = './src/environments/environment.ts';
+const targetDir = './src/environments/';
+
+// Make directory if it doesn't exist
+mkdir(targetDir, { recursive: true }, (err: any) => {
+    if (err) throw err;
+});
+
+const targetPath = `${targetDir}environment.ts`;
 
 const envConfigFile = `export const environment = {
     production: false,
