@@ -1,0 +1,26 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches: [ "dev", "main" ] # adjust this according to your workflow
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v2
+        with:
+          name: .net-app
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'sanasoppa-stag-api'
+          slot-name: 'Production' # adjust this according to your workflow
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_F84D316504F045FBAD346D2901088EB4 }}
+          package: .
