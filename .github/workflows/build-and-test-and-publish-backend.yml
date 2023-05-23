@@ -1,4 +1,4 @@
-name: Build and Test
+name: Build, Test and publish
 
 on:
   push:
@@ -31,7 +31,7 @@ jobs:
     - name: Build
       run: dotnet build ${{ env.SOLUTION_PATH }} --no-restore --configuration Release
     - name: Test with coverage
-      run: dotnet test ${{ env.SOLUTION_PATH }} --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger:"console;verbosity=detailed" --results-directory ${{ env.TEST_RESULTS_DIR }}
+      run: dotnet test ${{ env.SOLUTION_PATH }} --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --logger:"console;verbosity=detailed" --results-directory ${{ env.TEST_RESULTS_DIR }}
 
     - name: Report to DeepSource
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -44,7 +44,28 @@ jobs:
     - name: Publish
       run: dotnet publish ${{ env.SOLUTION_PATH }} -c Release -o ${{env.DOTNET_ROOT}}/api
     - name: Upload artifact for deployment job
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: sanasoppa-api
         path: ${{env.DOTNET_ROOT}}/api
+  
+  deploy_staging:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    needs: build_test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: sanasoppa-api
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'sanasoppa-stag-api'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_F84D316504F045FBAD346D2901088EB4 }}
+          package: .
