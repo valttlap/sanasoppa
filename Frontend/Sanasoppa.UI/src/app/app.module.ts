@@ -21,6 +21,7 @@ import { RecaptchaV3Module, RECAPTCHA_V3_SITE_KEY } from 'ng-recaptcha';
 import { AuthHttpInterceptor, AuthModule } from '@auth0/auth0-angular';
 import { AuthButtonComponent } from './components/auth-button/auth-button.component';
 import { environment as env } from '../environments/environment';
+import { TestComponent } from './features/test/test.component';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import { environment as env } from '../environments/environment';
     CreateComponent,
     ServerErrorComponent,
     AuthButtonComponent,
+    TestComponent,
   ],
   imports: [
     BrowserAnimationsModule,
