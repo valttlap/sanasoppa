@@ -6,7 +6,7 @@ on:
       - dev
     paths:
       - Frontend/**
-      - .github/workflows/azure-static-web-apps-zealous-wave-0c2425e03.yml
+      - .github/workflows/azure-static-web-staging.yml
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
