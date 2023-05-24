@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+      - main
     paths:
       - Frontend/**
       - .github/workflows/azure-static-web-apps-black-wave-04649b603.yml
