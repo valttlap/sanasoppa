@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Sanasoppa.API.Models.Configs;
 
 namespace Sanasoppa.API.Extensions;
@@ -8,9 +11,7 @@ public static class ConfigurationServiceExtensions
         this IServiceCollection services,
         IConfiguration config)
     {
-        services.Configure<JwtSettings>(config.GetSection("JwtSettings"));
-        services.Configure<ReCaptchaSettings>(config.GetSection("ReCaptchaSettings"));
-        services.Configure<SendInBlueSettings>(config.GetSection("SendInBlueSettings"));
+        services.Configure<Auth0Settings>(config.GetSection("Auth0"));
         return services;
     }
 }

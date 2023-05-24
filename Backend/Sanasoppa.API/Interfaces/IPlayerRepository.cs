@@ -1,27 +1,30 @@
-﻿using Sanasoppa.API.Entities;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Sanasoppa.API.Entities;
 
 namespace Sanasoppa.API.Interfaces;
 
 public interface IPlayerRepository
 {
     /// <summary>
-    /// GetPlayerAsync returns a Task<Player?> that represents the asynchronous operation of getting
-    /// a Player with the given id.
+    /// GetPlayerAsync returns a Player with id
     /// </summary>
     /// <param name="id">The id of the player you want to get.</param>
+    /// <returns> Player if found, else null</returns>
     Task<Player?> GetPlayerAsync(int id);
     /// <summary>
     /// > Get the player associated with the given connection id
     /// </summary>
     /// <param name="connectionId">The connection id of the player you want to get.</param>
     Task<Player?> GetPlayerByConnIdAsync(string connectionId);
+    /// <summary>
+    /// Get all players that are not in a game
+    /// </summary>
+    /// <returns>A collection of all players that are not in a game.</returns>
     Task<IEnumerable<Player>> GetPlayersNotInGameAsync();
     /// <summary>
-    /// > Get a player by their username
-    /// </summary>
-    /// <param name="username">The username of the player you want to get.</param>
-    /// <summary>
-    /// > Get a player by their username
+    /// Get a player by their username
     /// </summary>
     /// <param name="username">The username of the player you want to get.</param>
     Task<Player?> GetPlayerByUsernameAsync(string username);
@@ -32,23 +35,18 @@ public interface IPlayerRepository
     Task<Game?> GetPlayerGameAsync(string connId);
     /// <summary>
     /// "Get the game that the player is in, if any."
-    /// 
-    /// The function returns a `Task<Game?>` which means that it returns a `Task` that will
-    /// eventually return a `Game` or `null`
     /// </summary>
-    /// <param name="Player">The player you want to get the game of.</param>
+    /// <param name="player">The player you want to get the game of.</param>
+    /// <returns>The game that the player is in, if any.</returns>
     Task<Game?> GetPlayerGameAsync(Player player);
     /// <summary>
-    /// > Adds a player to the game
+    /// Give points to a player
     /// </summary>
-    /// <param name="Player">The player object that you want to add to the game.</param>
+    /// <param name="playerId">The id of the player you want to give points to.</param>
+    /// <param name="points">The amount of points you want to give.</param>
+    /// <returns></returns>
     Task GivePointsAsync(int playerId, int points);
     void GivePoints(Player player, int points);
     void AddPlayer(Player player);
-    /// <summary>
-    /// > This function is called every frame and is used to update the player's position and other
-    /// variables
-    /// </summary>
-    /// <param name="Player">The player that the event is being called for.</param>
     void Update(Player player);
 }

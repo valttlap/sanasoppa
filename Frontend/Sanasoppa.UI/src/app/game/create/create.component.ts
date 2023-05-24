@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { HubConnection } from '@microsoft/signalr';
-import { GameHubService } from 'src/app/_services/gamehub.service';
+import { GameHubService } from '@app/core';
 
 @Component({
   selector: 'app-create',
@@ -13,7 +13,7 @@ export class CreateComponent implements OnInit {
   constructor(private gamehubService: GameHubService, private router: Router) {}
 
   ngOnInit(): void {
-    this.gamehub = this.gamehubService.getHubConnection();
+    this.gamehub = this.gamehubService.hubConnection;
   }
 
   createGame() {

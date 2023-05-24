@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Sanasoppa.API.Entities;
 using Sanasoppa.API.EventArgs;
@@ -21,7 +24,7 @@ public class LobbyHub : Hub
     public async Task<string> CreateGame(string gameName)
     {
         gameName = gameName.Sanitize();
-        if (await _uow.GameRepository.GameExistsAsync(gameName))
+        if (await _uow.GameRepository.GameExistsAsync(gameName).ConfigureAwait(false))
         {
             throw new ArgumentException($"The game with the name {gameName} already exists");
         }
@@ -32,7 +35,7 @@ public class LobbyHub : Hub
             GameState = GameState.NotStarted,
         };
 
-        var player = await _uow.PlayerRepository.GetPlayerByUsernameAsync(Context.User!.GetUsername()!);
+        var player = await _uow.PlayerRepository.GetPlayerByUsernameAsync(Context.User!.GetUsername()!).ConfigureAwait(false);
         if (player == null)
         {
             player = new Player
@@ -43,11 +46,11 @@ public class LobbyHub : Hub
                 IsOnline = true
             };
             _uow.PlayerRepository.AddPlayer(player);
-            await _uow.Complete();
+            await _uow.Complete().ConfigureAwait(false);
         }
         game.Players.Add(player);
         _uow.GameRepository.AddGame(game);
-        if (!await _uow.Complete())
+        if (!await _uow.Complete().ConfigureAwait(false))
         {
             throw new HubException("Something went wrong while creating a game");
         }
@@ -57,7 +60,7 @@ public class LobbyHub : Hub
 
     private async void OnGameListChanged(object? sender, GameListChangedEventArgs e)
     {
-        var games = await _uow.GameRepository.GetNotStartedGamesAsync();
-        await Clients.All.SendAsync("GameListUpdated", games);
+        var games = await _uow.GameRepository.GetNotStartedGamesAsync().ConfigureAwait(false);
+        await Clients.All.SendAsync("GameListUpdated", games).ConfigureAwait(false);
     }
 }

@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.EntityFrameworkCore;
 using Sanasoppa.API.Entities;
 using Sanasoppa.API.Interfaces;
@@ -17,22 +20,18 @@ public class ExplanationRepository : IExplanationRepository
         return await _context.Explanations
             .Include(e => e.Player)
             .Include(e => e.Round)
-            .FirstOrDefaultAsync(e => e.Player.Id == playerId && e.Round.Id == roundId);
+            .FirstOrDefaultAsync(e => e.Player.Id == playerId && e.Round.Id == roundId).ConfigureAwait(false);
     }
     public async Task<Explanation?> GetExplanationAsync(int explanationId)
     {
         return await _context.Explanations
             .Include(e => e.Player)
             .Include(e => e.Round)
-            .FirstOrDefaultAsync(e => e.Id == explanationId);
+            .FirstOrDefaultAsync(e => e.Id == explanationId).ConfigureAwait(false);
     }
     public async Task RemoveExplanationAsync(int playerId, int roundId)
     {
-        var explanation = await GetExplanationAsync(playerId, roundId);
-        if (explanation == null)
-        {
-            throw new ArgumentException("The explanation does not exist.", nameof(playerId));
-        }
+        var explanation = await GetExplanationAsync(playerId, roundId).ConfigureAwait(false) ?? throw new ArgumentException("The explanation does not exist.", nameof(playerId));
         _context.Explanations.Remove(explanation);
     }
 
@@ -46,13 +45,12 @@ public class ExplanationRepository : IExplanationRepository
         _context.Entry(explanation).State = EntityState.Modified;
     }
 
-
     public async Task<IEnumerable<Explanation>> GetRoundExplanationsWithVotesAsync(int roundId)
     {
         return await _context.Explanations
             .Include(e => e.Player)
             .Include(e => e.Votes)
             .Where(e => e.RoundId == roundId)
-            .ToListAsync();
+            .ToListAsync().ConfigureAwait(false);
     }
 }
