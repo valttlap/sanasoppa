@@ -1,10 +1,8 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
-import { GameHubService, GameService } from '@app/core';
+import { Game, GameHubService, GameService, Player } from '@app/core';
 import { HubConnection } from '@microsoft/signalr';
 import { take } from 'rxjs';
-import { IPlayer } from 'src/app/_models/IPlayer';
-import { Game } from 'src/app/_models/game';
 import { AuthService, User } from '@auth0/auth0-angular';
 
 @Component({
@@ -14,7 +12,7 @@ import { AuthService, User } from '@auth0/auth0-angular';
 export class LobbyComponent implements OnInit {
   name!: string;
   gameHub!: HubConnection;
-  players: IPlayer[] = [];
+  players: Player[] = [];
   user?: User;
   game?: Game;
 
@@ -60,7 +58,7 @@ export class LobbyComponent implements OnInit {
     this.refeshPlayers();
     this.gameHub.on(
       'PlayerJoined',
-      (players: IPlayer[]) => (this.players = players)
+      (players: Player[]) => (this.players = players)
     );
   }
 

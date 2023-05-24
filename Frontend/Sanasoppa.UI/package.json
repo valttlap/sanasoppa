@@ -26,7 +26,6 @@
     "@ng-bootstrap/ng-bootstrap": "^14.2.0",
     "@popperjs/core": "^2.11.7",
     "bootstrap": "^5.2.3",
-    "ng-recaptcha": "^11.0.0",
     "ngx-spinner": "^15.0.1",
     "ngx-toastr": "^16.2.0",
     "rxjs": "~7.8.1",
