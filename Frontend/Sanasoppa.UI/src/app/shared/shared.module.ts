@@ -7,6 +7,8 @@ import { RouterModule } from '@angular/router';
 import { COMPONENTS } from './components';
 import { PageLayoutComponent } from './components/page-layout.component';
 import { PageFooterComponent } from './components/page-footer.component';
+import { ToastrModule } from 'ngx-toastr';
+import { NgxSpinnerModule } from 'ngx-spinner';
 
 @NgModule({
   declarations: [
@@ -17,7 +19,16 @@ import { PageFooterComponent } from './components/page-footer.component';
     PageLayoutComponent,
     PageFooterComponent,
   ],
-  imports: [CommonModule, RouterModule],
-  exports: [...COMPONENTS],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ToastrModule.forRoot({
+      positionClass: 'toast-bottom-right',
+    }),
+    NgxSpinnerModule.forRoot({
+      type: 'line-scale-party',
+    }),
+  ],
+  exports: [...COMPONENTS, ToastrModule, NgxSpinnerModule],
 })
 export class SharedModule {}

@@ -3,8 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HubConnection } from '@microsoft/signalr';
 import { take } from 'rxjs';
-import { Game } from 'src/app/_models/game';
-import { GameHubService, LobbyHubService } from '@app/core';
+import { Game, GameHubService, LobbyHubService } from '@app/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AuthService, User } from '@auth0/auth0-angular';
 
