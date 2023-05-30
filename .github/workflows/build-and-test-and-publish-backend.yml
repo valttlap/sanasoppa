@@ -15,6 +15,7 @@ on:
 env:
   SOLUTION_PATH: Backend/Sanasoppa.sln
   TEST_RESULTS_DIR: /tmp/test-results
+  CSPORJ_PATH: Backend/Sanasoppa.API/Sanasoppa.API.csproj
 
 jobs:
   build_test:
@@ -42,7 +43,7 @@ jobs:
         ./bin/deepsource report --analyzer test-coverage --key csharp --value-file $COVERAGE_FILE
 
     - name: Publish
-      run: dotnet publish ${{ env.SOLUTION_PATH }} -c Release -o ${{env.DOTNET_ROOT}}/api
+      run: dotnet publish ${{ env.CSPORJ_PATH }} -c Release -o ${{env.DOTNET_ROOT}}/api
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v3
       with:
