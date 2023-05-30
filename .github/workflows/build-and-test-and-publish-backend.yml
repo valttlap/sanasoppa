@@ -5,12 +5,12 @@ on:
     branches: [ "main", "dev" ]
     paths:
       - Backend/**
-      - .github/workflows/build-and-test.yml
+      - .github/workflows/build-and-test-and-publish-backend.yml
   pull_request:
     branches: [ "main", "dev" ]
     paths:
       - Backend/**
-      - .github/workflows/build-and-test.yml
+      - .github/workflows/build-and-test-and-publish-backend.yml
 
 env:
   SOLUTION_PATH: Backend/Sanasoppa.sln
