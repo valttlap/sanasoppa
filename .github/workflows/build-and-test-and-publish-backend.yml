@@ -15,6 +15,7 @@ on:
 env:
   SOLUTION_PATH: Backend/Sanasoppa.sln
   TEST_RESULTS_DIR: /tmp/test-results
+  CSPORJ_PATH: Backend/Sanasoppa.API/Sanasoppa.API.csproj
 
 jobs:
   build_test:
@@ -34,7 +35,7 @@ jobs:
       run: dotnet test ${{ env.SOLUTION_PATH }} --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --logger:"console;verbosity=detailed" --results-directory ${{ env.TEST_RESULTS_DIR }}
 
     - name: Publish
-      run: dotnet publish ${{ env.SOLUTION_PATH }} -c Release -o ${{env.DOTNET_ROOT}}/api
+      run: dotnet publish ${{ env.CSPORJ_PATH }} -c Release -o ${{env.DOTNET_ROOT}}/api
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v3
       with:
