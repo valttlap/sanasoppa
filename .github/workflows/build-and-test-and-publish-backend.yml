@@ -2,15 +2,16 @@ name: Build, Test and publish
 
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: dev
     paths:
       - Backend/**
       - .github/workflows/build-and-test-and-publish-backend.yml
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: dev
     paths:
       - Backend/**
       - .github/workflows/build-and-test-and-publish-backend.yml
+  workflow_dispatch:
 
 env:
   SOLUTION_PATH: Backend/Sanasoppa.sln
@@ -18,47 +19,54 @@ env:
   CSPORJ_PATH: Backend/Sanasoppa.API/Sanasoppa.API.csproj
 
 jobs:
-  build_test:
+  build-test:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 7.0.x
-    - name: Restore dependencies
-      run: dotnet restore ${{ env.SOLUTION_PATH }}
-    - name: Build
-      run: dotnet build ${{ env.SOLUTION_PATH }} --no-restore --configuration Release
-    - name: Test with coverage
-      run: dotnet test ${{ env.SOLUTION_PATH }} --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --logger:"console;verbosity=detailed" --results-directory ${{ env.TEST_RESULTS_DIR }}
+      - uses: actions/checkout@v2
 
-    - name: Publish
-      run: dotnet publish ${{ env.CSPORJ_PATH }} -c Release -o ${{env.DOTNET_ROOT}}/api
-    - name: Upload artifact for deployment job
-      uses: actions/upload-artifact@v3
-      with:
-        name: sanasoppa-api
-        path: ${{env.DOTNET_ROOT}}/api
-  
-  deploy_staging:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
-    needs: build_test
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v3
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v1
         with:
-          name: sanasoppa-api
+          dotnet-version: '7.x'
+          include-prerelease: true
+      
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.SOLUTION_PATH }}
+      
+      - name: Build
+        run: dotnet build ${{ env.SOLUTION_PATH }} --no-restore --configuration Release
+      
+      - name: Test with coverage
+        run: dotnet test ${{ env.SOLUTION_PATH }} --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --logger:"console;verbosity=detailed" --results-directory ${{ env.TEST_RESULTS_DIR }}
+      
+      - name: dotnet publish
+        run: dotnet publish ${{ env.CSPORJ_PATH }} -c Release -o ${{env.DOTNET_ROOT}}/staging-api
+      
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v2
+        with:
+          name: sanasoppa-staging-api
+          path: ${{env.DOTNET_ROOT}}/staging-api
+    
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-test
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v2
+        with:
+          name: sanasoppa-staging-api
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'sanasoppa-stag-api'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_F84D316504F045FBAD346D2901088EB4 }}
+          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_B3BAD5569FEE4E649983732329CC227D }}
           package: .
