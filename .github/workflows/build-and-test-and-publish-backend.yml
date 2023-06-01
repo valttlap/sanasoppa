@@ -68,5 +68,5 @@ jobs:
         with:
           app-name: 'sanasoppa-stag-api'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_B3BAD5569FEE4E649983732329CC227D }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_F84D316504F045FBAD346D2901088EB4 }}
           package: .
