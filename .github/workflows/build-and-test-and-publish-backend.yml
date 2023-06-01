@@ -67,6 +67,6 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'sanasoppa-stag-api'
-          slot-name: 'Staging'
+          slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_B3BAD5569FEE4E649983732329CC227D }}
           package: .
