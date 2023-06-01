@@ -7,7 +7,15 @@ on:
   push:
     branches:
       - main
+    paths:
+      - Backend/**
+      - .github/workflows/main_sanasoppa-api.yml
   workflow_dispatch:
+
+env:
+  SOLUTION_PATH: Backend/Sanasoppa.sln
+  TEST_RESULTS_DIR: /tmp/test-results
+  CSPORJ_PATH: Backend/Sanasoppa.API/Sanasoppa.API.csproj
 
 jobs:
   build:
@@ -22,17 +30,23 @@ jobs:
           dotnet-version: '7.x'
           include-prerelease: true
 
-      - name: Build with dotnet
-        run: dotnet build Backend/Sanasoppa.API/Sanasoppa.API.csproj --configuration Release
-
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.SOLUTION_PATH }}
+        
+      - name: Build
+        run: dotnet build ${{ env.SOLUTION_PATH }} --no-restore --configuration Release
+        
+      - name: Test with coverage
+        run: dotnet test ${{ env.SOLUTION_PATH }} --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --logger:"console;verbosity=detailed" --results-directory ${{ env.TEST_RESULTS_DIR }}
+        
       - name: dotnet publish
-        run: dotnet publish Backend/Sanasoppa.API/Sanasoppa.API.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish ${{ env.CSPORJ_PATH }} -c Release -o ${{env.DOTNET_ROOT}}/prod-api
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
         with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          name: sanasoppa-api
+          path: ${{env.DOTNET_ROOT}}/prod-api
 
   deploy:
     runs-on: ubuntu-latest
@@ -45,7 +59,7 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v2
         with:
-          name: .net-app
+          name: sanasoppa-api
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
