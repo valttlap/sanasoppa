@@ -12,9 +12,13 @@ $text-font-stack: 'Inter', 'Open Sans', 'Helvetica Neue Light', 'Helvetica Neue'
 $code-font-stack: 'Courier New', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono',
   'Monaco', monospace !default;
 
+/// Main background color
+/// @type Color
+$main-bg-color: #374151 !default;
+
 /// Copy text color
 /// @type Color
-$text-color: rgb(34, 34, 34) !default;
+$text-color: #9ca3af !default;
 
 /// Main brand color
 /// @type Color

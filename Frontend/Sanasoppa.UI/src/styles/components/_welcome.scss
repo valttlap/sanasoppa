@@ -8,11 +8,46 @@
     left: 50%;
     transform: translate(-50%, -50%);
 
+
+    h1 {
+      font-size: 5rem;
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
+      user-select: none;
+
+      span {
+        opacity: 100;
+        transform: translateY(-100%);
+        animation: drop 600ms ease-in forwards;
+      }
+    }
     &--buttons {
+        margin-top: 0.5rem;
         width: 100%;
         display: flex;
         align-items: center;
         justify-content: space-around;
+        overflow: hidden;
+
+        button {
+          transform: translateY(-100%);
+          animation: drop 800ms ease-in 1200ms forwards;
+
+        }
     }
+  }
+
+@keyframes drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  80% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-  

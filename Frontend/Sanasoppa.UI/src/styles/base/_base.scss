@@ -21,6 +21,10 @@ html {
   box-sizing: inherit;
 }
 
+body {
+  background-color: $main-bg-color;
+}
+
 /**
  * Basic styles for links
  */
