@@ -10,7 +10,7 @@
 
 
     h1 {
-      font-size: 5rem;
+      font-size: 3rem;
       display: flex;
       justify-content: center;
       overflow: hidden;
@@ -32,7 +32,8 @@
 
         button {
           transform: translateY(-100%);
-          animation: drop 800ms ease-in 1200ms forwards;
+          opacity: 0;
+          animation: drop 600ms ease-in 1200ms forwards;
 
         }
     }
