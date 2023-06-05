@@ -4,7 +4,7 @@ import { SignupButtonComponent } from './components/buttons/signup-button.compon
 import { LoginButtonComponent } from './components/buttons/login-button.component';
 import { LogoutButtonComponent } from './components/buttons/logout-button.component';
 import { RouterModule } from '@angular/router';
-import { COMPONENTS } from './components';
+import { AUTH_BUTTON_COMPONENTS, COMPONENTS } from './components';
 import { PageLayoutComponent } from './components/page-layout.component';
 import { PageFooterComponent } from './components/page-footer.component';
 import { ToastrModule } from 'ngx-toastr';
@@ -29,6 +29,11 @@ import { NgxSpinnerModule } from 'ngx-spinner';
       type: 'line-scale-party',
     }),
   ],
-  exports: [...COMPONENTS, ToastrModule, NgxSpinnerModule],
+  exports: [
+    ...COMPONENTS,
+    ToastrModule,
+    NgxSpinnerModule,
+    ...AUTH_BUTTON_COMPONENTS,
+  ],
 })
 export class SharedModule {}

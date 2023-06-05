@@ -6,12 +6,12 @@
   @extend .btn;
   @extend .btn-primary;
 
-  background-color: #3498db;
-  border-color: #3498db;
+  background-color: $light-blue;
+  border-color: $light-blue;;
 
   &:hover {
-    background-color: #2980b9;
-    border-color: #2980b9;
+    background-color: $blue;
+    border-color: $blue;
   }
 }
 
@@ -19,11 +19,11 @@
   @extend .btn;
   @extend .btn-primary;
 
-  background-color: #2ecc71;
-  border-color: #2ecc71;
+  background-color: $light-green;
+  border-color: $light-green;
 
   &:hover {
-    background-color: #27ae60;
-    border-color: #27ae60;
+    background-color: $green;
+    border-color: $green;
   }
 }

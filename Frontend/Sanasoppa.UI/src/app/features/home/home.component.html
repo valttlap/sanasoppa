@@ -1,23 +1,9 @@
 <div class="welcome-base">
   <div class="wrapper-welcome">
     <h1 appSplitText>SanaSoppa</h1>
-    <h2 *ngIf="user$ | async as user">
-      Hei
-      {{
-        user.name
-          ? user.name
-          : user.nickname
-          ? user.nickname
-          : user.email
-          ? user.email
-          : 'Tietoja ei löydy'
-      }}!
-    </h2>
     <div class="wrapper-welcome--buttons">
-      <app-nav-bar-buttons></app-nav-bar-buttons>
+      <app-login-button></app-login-button>
+      <app-signup-button></app-signup-button>
     </div>
-    <button *ngIf="user$ | async" class="btn btn-primary" routerLink="/list">
-      Siirry pelilistaukseen
-    </button>
   </div>
 </div>

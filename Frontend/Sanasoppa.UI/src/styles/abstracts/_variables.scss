@@ -16,6 +16,8 @@ $code-font-stack: 'Courier New', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono',
 /// @type Color
 $main-bg-color: #2C3E50 !default;
 
+$main-bg-color-2: #34495e !default;
+
 /// Copy text color
 /// @type Color
 $text-color: white !default;
@@ -26,15 +28,77 @@ $brand-color: #f2af88 !default;
 
 /// Light grey
 /// @type Color
-$light-grey: rgb(237, 237, 237) !default;
+$light-grey: #ecf0f1 !default;
 
-/// Medium grey
+/// Medium light grey
 /// @type Color
-$mid-grey: rgb(153, 153, 153) !default;
+$mid-light-grey: #bdc3c7 !default;
 
-/// Dark grey
+/// Medium dark grey
 /// @type Color
-$dark-grey: rgb(68, 68, 68) !default;
+$mid-dark-grey: #95a5a6 !default;
+
+/// Medium dark grey
+/// @type Color
+$dark-grey: #7f8c8d !default;
+
+/// Light green
+/// @type Color
+$light-green: #2ecc71 !default;
+
+/// Green
+/// @type Color
+$green: #27ae60 !default;
+
+/// Light blue
+/// @type Color
+$light-blue: #3498db !default;
+
+/// Blue
+/// @type Color
+$blue: #2980b9 !default;
+
+/// Light red
+/// @type Color
+$light-red: #e74c3c !default;
+
+/// Red
+/// @type Color
+$red: #c0392b !default;
+
+/// Light yellow
+/// @type Color
+$light-yellow: #f1c40f !default;
+
+/// Yellow
+/// @type Color
+$yellow: #f39c12 !default;
+
+/// Light orange
+/// @type Color
+$light-orange: #e67e22 !default;
+
+/// Orange
+/// @type Color
+$orange: #d35400 !default;
+
+/// Light purple
+/// @type Color
+$light-purple: #9b59b6 !default;
+
+/// Purple
+/// @type Color
+$purple: #8e44ad !default;
+
+/// Light turquoise
+/// @type Color
+$light-turquoise: #1abc9c !default;
+
+/// Turquoise
+/// @type Color
+$turquoise: #16a085 !default;
+
+
 
 /// Black
 /// @type Color
