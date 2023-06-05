@@ -1,43 +1,41 @@
 .wrapper-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  h1 {
+    font-size: 3rem;
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    overflow: hidden;
+    user-select: none;
 
-
-    h1 {
-      font-size: 3rem;
-      display: flex;
-      justify-content: center;
-      overflow: hidden;
-      user-select: none;
-
-      span {
-        opacity: 100;
-        transform: translateY(-100%);
-        animation: drop 600ms ease-in forwards;
-      }
-    }
-    &--buttons {
-        margin-top: 0.5rem;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-around;
-        overflow: hidden;
-
-        button {
-          transform: translateY(-100%);
-          opacity: 0;
-          animation: drop 600ms ease-in 1200ms forwards;
-
-        }
+    span {
+      opacity: 100;
+      transform: translateY(-100%);
+      animation: drop 600ms ease-in forwards;
     }
   }
+  &--buttons {
+    margin-top: 0.5rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    overflow: hidden;
+
+    button {
+      transform: translateY(-100%);
+      opacity: 0;
+      animation: drop 600ms ease-in 1200ms forwards;
+    }
+  }
+}
 
 @keyframes drop {
   0% {
