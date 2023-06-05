@@ -44,8 +44,12 @@
     opacity: 0;
     transform: translateY(-100%);
   }
-  80% {
-    opacity: 0.5;
+  75% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  87.5% {
+    transform: translateY(-10%);
   }
   100% {
     opacity: 1;

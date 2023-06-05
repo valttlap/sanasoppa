@@ -9,7 +9,7 @@ export class BusyService {
   private readonly spinner: Spinner = {
     type: 'line-scale-party',
     bdColor: 'rgba(255,255,255,0)',
-    color: '#333333',
+    color: '#bdc3c7',
   };
 
   constructor(private spinnerService: NgxSpinnerService) {}

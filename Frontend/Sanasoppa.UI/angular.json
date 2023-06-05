@@ -29,6 +29,7 @@
               "src/staticwebapp.config.json"
             ],
             "styles": [
+              "./node_modules/ngx-spinner/animations/line-scale-party.css",
               "src/styles/main.scss"
             ],
             "scripts": ["./node_modules/bootstrap/dist/js/bootstrap.js"]

@@ -19,6 +19,7 @@ import { AuthHttpInterceptor, AuthModule } from '@auth0/auth0-angular';
 import { AuthButtonComponent } from './components/auth-button/auth-button.component';
 import { environment as env } from '../environments/environment';
 import { SharedModule } from '@app/shared';
+import { NgxSpinnerModule } from 'ngx-spinner';
 
 @NgModule({
   declarations: [
@@ -44,6 +45,9 @@ import { SharedModule } from '@app/shared';
       httpInterceptor: {
         allowedList: ['*'],
       },
+    }),
+    NgxSpinnerModule.forRoot({
+      type: 'line-scale-party',
     }),
     SharedModule,
   ],
