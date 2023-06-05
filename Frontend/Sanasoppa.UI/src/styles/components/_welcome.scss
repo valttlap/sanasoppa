@@ -15,20 +15,20 @@
     overflow: hidden;
     user-select: none;
 
-      span {
-        opacity: 100;
-        transform: translateY(-100%);
-        animation: drop 600ms ease-in forwards;
-      }
+    span {
+      opacity: 100;
+      transform: translateY(-100%);
+      animation: drop 600ms ease-in forwards;
     }
-    &--buttons {
-        margin-top: 0.5rem;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-around;
-        gap: 1rem;
-        overflow: hidden;
+  }
+  &--buttons {
+    margin-top: 0.5rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 1rem;
+    overflow: hidden;
 
     button {
       transform: translateY(-100%);
