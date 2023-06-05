@@ -1,3 +1,29 @@
 // -----------------------------------------------------------------------------
 // This file contains all styles related to the button component.
 // -----------------------------------------------------------------------------
+
+.btn-login {
+  @extend .btn;
+  @extend .btn-primary;
+
+  background-color: $light-blue;
+  border-color: $light-blue;
+
+  &:hover {
+    background-color: $blue;
+    border-color: $blue;
+  }
+}
+
+.btn-signup {
+  @extend .btn;
+  @extend .btn-primary;
+
+  background-color: $light-green;
+  border-color: $light-green;
+
+  &:hover {
+    background-color: $green;
+    border-color: $green;
+  }
+}

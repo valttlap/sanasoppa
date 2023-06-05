@@ -4,7 +4,7 @@ import { AuthService } from '@auth0/auth0-angular';
 @Component({
   selector: 'app-login-button',
   template: `
-    <button class="btn btn-primary" (click)="handleLogin()">
+    <button class="btn-login btn-lg" (click)="handleLogin()">
       Kirjaudu Sisään
     </button>
   `,

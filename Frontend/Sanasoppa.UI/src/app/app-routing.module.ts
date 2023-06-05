@@ -17,6 +17,11 @@ const routes: Routes = [
       import('./features/callback/callback.module').then(m => m.CallbackModule),
   },
   {
+    path: 'lobby',
+    loadChildren: () =>
+      import('./features/game/game.module').then(m => m.GameModule),
+  },
+  {
     path: 'list',
     component: ListComponent,
   },

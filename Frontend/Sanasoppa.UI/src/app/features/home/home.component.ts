@@ -1,24 +1,20 @@
-import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
 import { AuthService } from '@auth0/auth0-angular';
-import { take } from 'rxjs';
-import { GameHubService, GameService } from '@app/core';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
 })
-export class HomeComponent {
-  user$ = this.auth.user$;
-  constructor(
-    private auth: AuthService,
-    private gameHubService: GameHubService,
-    private gameService: GameService
-  ) {}
+export class HomeComponent implements OnInit {
+  isAuthenticated$ = this.auth.isAuthenticated$;
+  constructor(private auth: AuthService, private router: Router) {}
 
-  getGames(): void {
-    this.gameService
-      .getNotStartedGames()
-      .pipe(take(1))
-      .subscribe(game => console.log(game));
+  ngOnInit(): void {
+    this.isAuthenticated$.subscribe(isAuthenticated => {
+      if (isAuthenticated) {
+        this.router.navigate(['/lobby']);
+      }
+    });
   }
 }

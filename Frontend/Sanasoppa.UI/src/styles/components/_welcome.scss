@@ -1,18 +1,57 @@
 .wrapper-welcome {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 
-    &--buttons {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-around;
+  h1 {
+    font-size: 3rem;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    user-select: none;
+
+    span {
+      opacity: 100;
+      transform: translateY(-100%);
+      animation: drop 600ms ease-in forwards;
     }
+  }
+  &--buttons {
+    margin-top: 0.5rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 1rem;
+    overflow: hidden;
+
+    button {
+      transform: translateY(-100%);
+      opacity: 0;
+      animation: drop 600ms ease-in 1200ms forwards;
+    }
+  }
 }
-  
+
+@keyframes drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  87.5% {
+    transform: translateY(-10%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
